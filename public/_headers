@@ -1,0 +1,6 @@
+# Mission Control preview compatibility (Cloudflare Pages / Netlify read this file
+# from the static export root). Vercel ignores _headers and uses vercel.json instead.
+# Lets the Mission Control portal embed the live site in its preview <iframe>.
+# NEVER add X-Frame-Options: DENY/SAMEORIGIN here — it re-blocks embedding.
+/*
+  Content-Security-Policy: frame-ancestors 'self' https://www.weblaunchacademy.com https://*.weblaunchacademy.com;

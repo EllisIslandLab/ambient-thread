@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #0b132b;
+  --navy-raise: #111b3d;
+  --navy-deep: #070e22;
+  --gold: #d0b040;
+  --gold-bright: #e3c96a;
+  --paper: #f7f2e6;
+  --paper-dim: #efe8d6;
+  --ink: #111a33;
+  --ink-soft: #3c4560;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+body {
+  background: var(--navy);
+  color: var(--paper);
+  font-family: var(--font-body), Verdana, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  line-height: 1.18;
+}
+
+/* Small-caps eyebrow labels echoing the logo wordmark */
+.eyebrow {
+  font-family: var(--font-body), Verdana, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* Accessible, always-visible focus states (audience includes assistive-tech users) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* The thread: a slow, quiet drift on the hero thread line. Purely decorative. */
+@keyframes thread-drift {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.thread-line {
+  animation: thread-drift 14s linear infinite;
+}
+
+/* Equalizer bars settling into stillness: the product metaphor. */
+@keyframes settle {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.55);
+  }
+}
+
+.eq-bar {
+  transform-origin: center bottom;
+  animation: settle 5s ease-in-out infinite;
+}
+
+/* Stillness is the design language: honor reduced-motion completely. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .thread-line,
+  .eq-bar {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
