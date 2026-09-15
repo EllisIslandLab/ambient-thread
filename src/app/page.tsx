@@ -119,9 +119,11 @@ const NAV_LINKS = [
   { href: "#mission", label: "Mission" },
   { href: "#story", label: "Our Story" },
   { href: "#app", label: "The App" },
-  { href: "#community", label: "Community" },
+  { href: "#involved", label: "Get Involved" },
   { href: "#contact", label: "Contact" },
 ];
+
+const DONATE_URL = "https://www.zeffy.com/en-US/donation-form/donate-to-pay-our-developer-and-backend-support";
 
 function Nav() {
   const [open, setOpen] = useState(false);
@@ -144,10 +146,12 @@ function Nav() {
             </a>
           ))}
           <a
-            href="#contact"
-            className="rounded-full border border-gold/60 px-5 py-2 text-[0.95rem] font-bold text-gold-bright transition-colors duration-200 hover:bg-gold hover:text-navy"
+            href={DONATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-gold px-6 py-2 text-[0.95rem] font-bold text-navy transition-colors duration-200 hover:bg-gold-bright"
           >
-            Get in Touch
+            Donate
           </a>
         </div>
 
@@ -183,11 +187,13 @@ function Nav() {
             ))}
             <li className="mt-3">
               <a
-                href="#contact"
-                className="block rounded-full border border-gold/60 px-5 py-3 text-center font-bold text-gold-bright"
+                href={DONATE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-full bg-gold px-5 py-3 text-center font-bold text-navy"
                 onClick={() => setOpen(false)}
               >
-                Get in Touch
+                Donate
               </a>
             </li>
           </ul>
@@ -237,10 +243,12 @@ function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
 
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <a
-            href="#app"
+            href={DONATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-full bg-gold px-8 py-3.5 text-base font-bold text-navy transition-colors duration-200 hover:bg-gold-bright"
           >
-            The App, Coming 2027
+            Support the Mission
           </a>
           <a
             href="#story"
@@ -321,6 +329,11 @@ function Mission() {
                 different hearing and auditory needs.
               </p>
               <p>
+                We provide education, peer-informed support, resource navigation, and an open
+                source app for people who have sound sensitivities, such as those who are
+                single-sided deaf or hard of hearing.
+              </p>
+              <p>
                 Our goal is to create thoughtful, easy-to-use software that helps people feel
                 more comfortable, aware, and connected to the world around them.
               </p>
@@ -388,9 +401,9 @@ function Story() {
             <div className="relative">
               <div className="aspect-[4/5] overflow-hidden rounded-lg">
                 <img
-                  src="/images/melissa-portrait.webp"
+                  src="/images/melissa-story.webp"
                   alt="Melissa Burns, founder of the Ambient Thread Foundation"
-                  className="h-full w-full object-cover object-[center_28%]"
+                  className="h-full w-full object-cover object-[center_30%]"
                 />
               </div>
               <div aria-hidden="true" className="absolute -bottom-3 -left-3 -z-10 h-full w-full rounded-lg border border-gold/40" />
@@ -409,8 +422,14 @@ function Story() {
             <div className="mt-8 space-y-6 text-lg leading-relaxed text-paper/80">
               <p>
                 Our founder, Melissa Burns, is newly single-sided deaf. After needing urgent
-                brain surgery to remove a huge acoustic neuroma in 2024, she woke up to a
-                completely different listening experience.
+                brain surgery to remove a huge acoustic neuroma in 2024, she woke up, at age
+                37, to a completely different listening experience.
+              </p>
+              <p>
+                The shift from balanced, two-sided listening to relying on one side made
+                everyday environments feel fundamentally different. Conversations were harder
+                to follow, noise brought a familiar feeling of sensory overload, and
+                situational awareness took far more attention and energy.
               </p>
               <blockquote className="border-l-2 border-gold pl-6">
                 <p className="font-display text-2xl font-medium italic text-gold-bright">
@@ -577,7 +596,15 @@ function AppSection() {
               ))}
             </ul>
 
-            <div className="mt-12 rounded-lg border border-navy/15 bg-paper-dim p-6">
+            <blockquote className="mt-12 border-l-2 border-gold pl-6">
+              <p className="font-display text-2xl font-medium italic text-ink">
+                This is not about creating a single &ldquo;correct&rdquo; way to hear. It is
+                about expanding control, choice, and access for people whose listening needs
+                are too often overlooked.
+              </p>
+            </blockquote>
+
+            <div className="mt-10 rounded-lg border border-navy/15 bg-paper-dim p-6">
               <p className="text-sm leading-relaxed text-ink-soft">
                 <span className="font-bold text-ink">A note on what this is: </span>
                 the app is intended for general wellness and everyday audio customization. It
@@ -601,41 +628,63 @@ function AppSection() {
   );
 }
 
-/* -------------------------------- Community -------------------------------- */
+/* ----------------------------- How We're Building --------------------------- */
 
-function Community() {
+const BUILDING_NOW = [
+  "Further develop the concept and technology behind our future iOS application",
+  "Learn from people with lived experience of hearing loss, asymmetrical hearing, sound sensitivity, and difficult listening environments",
+  "Build relationships with accessibility advocates, audio and technology professionals, community organizations, and potential collaborators",
+  "Explore ways to make personalized audio support more understandable, attainable, and inclusive",
+  "Shape future educational, advocacy, and community-resource efforts alongside the people they are intended to serve",
+];
+
+function HowWereBuilding() {
   return (
-    <section id="community" className="relative bg-navy">
+    <section id="vision" className="relative bg-navy">
       <ThreadDivider />
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
         <div className="grid grid-cols-1 gap-y-12 lg:grid-cols-12 lg:gap-x-16">
           <div className="lg:col-span-7">
-            <p className="eyebrow mb-5 text-gold-bright">More Than an App</p>
+            <p className="eyebrow mb-5 text-gold-bright">Our Vision</p>
             <h2 className="font-display text-4xl font-semibold text-paper sm:text-5xl">
-              Community support and resources.
+              A world where everyday listening feels more accessible.
             </h2>
             <div className="mt-8 space-y-6 text-lg leading-relaxed text-paper/80">
               <p>
-                We are committed to more than building an app. Through advocacy, education, and
-                community-based inclusion efforts, we hope to make helpful listening technology
-                easier to understand and more accessible to the people who could benefit from
-                it.
+                Ambient Thread Foundation envisions a world where people with different
+                auditory needs can move through daily life with greater confidence, comfort,
+                and connection. Sound is such a large part of everyday moments that people
+                forget so many of us experience sound differently.
               </p>
               <p>
-                If you live with hearing differences or auditory sensitivities, or you care
-                about someone who does, we would love to have you follow along as this work
-                grows.
+                We are in our founding stage. That means we are focused on creating a strong,
+                responsible foundation before making promises about outcomes. Right now,
+                Ambient Thread is working to:
               </p>
             </div>
-            <a
-              href="https://instagram.com/AmbientThread"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-10 inline-flex items-center gap-3 rounded-full border border-gold/60 px-7 py-3.5 font-bold text-gold-bright transition-colors duration-200 hover:bg-gold hover:text-navy"
-            >
-              <IconInstagram className="h-5 w-5" />
-              Follow @AmbientThread
-            </a>
+
+            <ul className="mt-8 space-y-4">
+              {BUILDING_NOW.map((item) => (
+                <li key={item} className="flex gap-4">
+                  <svg className="mt-1.5 h-4 w-4 shrink-0 text-gold" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m3 8.5 3.5 3.5L13 4" />
+                  </svg>
+                  <span className="text-paper/80">{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-10 space-y-6 text-lg leading-relaxed text-paper/80">
+              <p>
+                We believe that people most affected by a problem should have a meaningful
+                voice in shaping the solution, which is why we are community-informed by
+                design. We will be transparent about what we are learning, what we are still
+                exploring, and how feedback informs our next steps.
+              </p>
+              <p className="font-display text-2xl font-medium italic text-gold-bright">
+                After all, it was just noise until Ambient Thread entered the chat.
+              </p>
+            </div>
           </div>
 
           <div className="lg:col-span-5">
@@ -652,6 +701,119 @@ function Community() {
                 Life is meant to be experienced fully. Sound is a thread that connects us to it.
               </p>
             </div>
+
+            <div className="mx-auto mt-12 max-w-sm rounded-lg bg-navy-raise p-7">
+              <p className="eyebrow text-gold-bright">More Than an App</p>
+              <p className="mt-4 leading-relaxed text-paper/80">
+                We are committed to more than building an app. Through advocacy, education,
+                and community-based inclusion efforts, we hope to make helpful listening
+                technology easier to understand and more accessible to the people who could
+                benefit from it.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------- Get Involved ------------------------------ */
+
+const INVOLVEMENT = [
+  {
+    title: "Bring your skills",
+    text: "Offer professional expertise or pro-bono support. We are actively seeking skills such as design, legal, accounting, grant research, photography, social media, translation, and wellness expertise. Apply to be a community advisor, subject-matter advisor, or lived experience contributor.",
+  },
+  {
+    title: "Share your perspective",
+    text: "Email us your story with permission to share. Give insights about what makes you unique and how hearing loss or sensitivity affects you. Help us understand what support would make the greatest difference.",
+  },
+  {
+    title: "Make an introduction",
+    text: "Spread the word about us and our mission. Introduce us to potential partners, venues, businesses, sponsors, journalists, clinicians, educators, community leaders, and more.",
+  },
+  {
+    title: "Join a leadership pipeline",
+    text: "Email us to express your interest in future board, committee, ambassador, or internship roles.",
+  },
+  {
+    title: "Help shape our resources",
+    text: "Tell us if you would like to review guides or social media posts, test an app concept, join a focus group, or give feedback on website language and accessibility.",
+  },
+  {
+    title: "Stay in the loop",
+    text: "Become a founding supporter: follow us on Instagram for launch updates, behind-the-scenes progress, and first access to opportunities.",
+  },
+];
+
+function GetInvolved() {
+  return (
+    <section id="involved" className="bg-paper text-ink">
+      <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8 lg:py-32">
+        <div className="max-w-3xl">
+          <p className="eyebrow mb-5" style={{ color: "#6B5713" }}>
+            Help Shape What Comes Next
+          </p>
+          <h2 className="font-display text-4xl font-semibold sm:text-5xl">
+            Ways to get involved.
+          </h2>
+          <p className="mt-6 text-lg text-ink-soft">
+            This work grows through the people who join it. Whatever you can offer, from
+            lived experience to professional skills to a simple introduction, there is a
+            place for it here.
+          </p>
+        </div>
+
+        <div className="mt-14 grid grid-cols-1 gap-x-14 gap-y-10 md:grid-cols-2">
+          {INVOLVEMENT.map((item) => (
+            <div key={item.title} className="border-t border-navy/15 pt-6">
+              <h3 className="text-lg font-bold text-ink">{item.title}</h3>
+              <p className="mt-2 text-ink-soft">{item.text}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 flex flex-wrap items-center gap-4">
+          <a
+            href="mailto:AmbientThread@gmail.com"
+            className="inline-flex items-center gap-3 rounded-full bg-navy px-7 py-3.5 font-bold text-paper transition-colors duration-200 hover:bg-navy-raise"
+          >
+            <IconMail className="h-5 w-5 text-gold-bright" />
+            Email Us to Get Started
+          </a>
+          <a
+            href="https://instagram.com/AmbientThread"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 rounded-full border border-navy/30 px-7 py-3.5 font-bold text-ink transition-colors duration-200 hover:border-navy"
+          >
+            <IconInstagram className="h-5 w-5" />
+            Follow @AmbientThread
+          </a>
+        </div>
+
+        {/* Donate band */}
+        <div className="mt-16 rounded-lg bg-navy-deep p-8 sm:p-12">
+          <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center">
+            <div className="max-w-xl">
+              <p className="eyebrow text-gold-bright">Support the Work</p>
+              <h3 className="font-display mt-3 text-3xl font-semibold text-paper sm:text-4xl">
+                Every donation moves the app closer to launch.
+              </h3>
+              <p className="mt-4 text-paper/75">
+                Contributions go toward development and backend support for the foundation&rsquo;s
+                accessibility-focused iOS app. Donations are processed securely through Zeffy.
+              </p>
+            </div>
+            <a
+              href={DONATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 rounded-full bg-gold px-10 py-4 text-lg font-bold text-navy transition-colors duration-200 hover:bg-gold-bright"
+            >
+              Donate
+            </a>
           </div>
         </div>
       </div>
@@ -700,6 +862,17 @@ function Contact() {
                   </span>
                   <span className="font-bold text-ink underline-offset-4 group-hover:underline">
                     AmbientThread@gmail.com
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href="mailto:Admin@ambientthread.org" className="group flex items-center gap-4">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-gold-bright">
+                    <IconMail />
+                  </span>
+                  <span className="font-bold text-ink underline-offset-4 group-hover:underline">
+                    Admin@ambientthread.org
+                    <span className="block text-sm font-normal text-ink-soft">Administrative inquiries</span>
                   </span>
                 </a>
               </li>
@@ -908,7 +1081,8 @@ export default function Home() {
         <Mission />
         <Story />
         <AppSection />
-        <Community />
+        <HowWereBuilding />
+        <GetInvolved />
         <Contact />
       </main>
       <Footer />
