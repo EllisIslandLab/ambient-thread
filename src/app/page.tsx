@@ -246,13 +246,13 @@ function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
             href={DONATE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full bg-gold px-8 py-3.5 text-base font-bold text-navy transition-colors duration-200 hover:bg-gold-bright"
+            className="rounded-full border border-paper/30 bg-navy px-8 py-3.5 text-base font-bold text-paper transition-colors duration-200 hover:border-gold hover:text-gold-bright"
           >
             Support the Mission
           </a>
           <a
             href="#story"
-            className="rounded-full border border-paper/30 bg-navy px-8 py-3.5 text-base font-bold text-paper transition-colors duration-200 hover:border-gold hover:text-gold-bright"
+            className="rounded-full bg-gold px-8 py-3.5 text-base font-bold text-navy transition-colors duration-200 hover:bg-gold-bright"
           >
             Read Melissa&rsquo;s Story
           </a>
