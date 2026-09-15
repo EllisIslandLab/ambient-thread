@@ -252,7 +252,7 @@ function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
           </a>
           <a
             href="#story"
-            className="rounded-full border border-paper/30 px-8 py-3.5 text-base font-bold text-paper transition-colors duration-200 hover:border-gold hover:text-gold-bright"
+            className="rounded-full border border-paper/30 bg-navy px-8 py-3.5 text-base font-bold text-paper transition-colors duration-200 hover:border-gold hover:text-gold-bright"
           >
             Read Melissa&rsquo;s Story
           </a>
