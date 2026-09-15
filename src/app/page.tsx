@@ -120,6 +120,7 @@ const NAV_LINKS = [
   { href: "#story", label: "Our Story" },
   { href: "#app", label: "The App" },
   { href: "#involved", label: "Get Involved" },
+  { href: "#faq", label: "FAQ" },
   { href: "#contact", label: "Contact" },
 ];
 
@@ -821,6 +822,116 @@ function GetInvolved() {
   );
 }
 
+/* ----------------------------------- FAQ ------------------------------------ */
+
+const FAQS = [
+  {
+    q: "How can I support your mission right now?",
+    a: "You can support us by making a financial gift through our secure donation page, signing up for our volunteer list, or sharing our mission with your community on social media.",
+  },
+  {
+    q: "Do you accept in-kind donations (supplies, equipment, or services)?",
+    a: "Yes! We welcome professional pro-bono services and specific community supplies for the hearing sensitive communities. Please contact our team before sending items so that we can coordinate.",
+  },
+  {
+    q: "Is my donation tax-deductible?",
+    a: "The Ambient Thread Foundation is a registered New Mexico non-profit organization currently awaiting its official 501(c)(3) tax-exempt status from the IRS. Once approved, tax-exempt status is typically retroactive from our formation date (August 5, 2026), meaning your gift may become retroactively tax-deductible. We recommend holding onto your receipt and consulting a tax professional.",
+  },
+  {
+    q: "Where can I find your EIN or official registration details?",
+    a: "Transparency is core to our mission. Our EIN is 42-4819969, and we are legally registered with the State of New Mexico.",
+  },
+  {
+    q: "Are there any transaction fees taken out of my online donation?",
+    a: "No! We use Zeffy to process our online donations, which means 100% of your gift goes directly to our mission. Zeffy does not charge us any platform or credit card processing fees.",
+  },
+  {
+    q: "Can I volunteer remotely from any location?",
+    a: "Yes! Because we are a remote organization, we have plenty of digital and remote volunteer opportunities. Please email us to get started.",
+  },
+  {
+    q: "Your website is beautiful and incredibly fast! How did you build it and how can I create one like this?",
+    a: "Our website is completely custom-coded and built through Web Launch Academy. Visit weblaunchacademy.com or email hello@weblaunchacademy.com to learn how to completely build, launch, and own your own digital assets. We highly recommend checking them out.",
+  },
+];
+
+function Faq() {
+  return (
+    <section id="faq" className="relative bg-navy">
+      <ThreadDivider />
+      <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8 lg:py-28">
+        <p className="eyebrow mb-5 text-gold-bright">Questions, Answered</p>
+        <h2 className="font-display text-4xl font-semibold text-paper sm:text-5xl">
+          Frequently asked questions.
+        </h2>
+
+        <div className="mt-12">
+          {FAQS.map((item) => (
+            <details key={item.q} className="group border-b border-white/10">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-lg font-bold text-paper marker:hidden [&::-webkit-details-marker]:hidden">
+                <span>{item.q}</span>
+                <svg
+                  className="h-5 w-5 shrink-0 text-gold-bright transition-transform duration-200 group-open:rotate-45"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </summary>
+              <div className="pb-7 pr-10 leading-relaxed text-paper/80">
+                {item.q.startsWith("Your website") ? (
+                  <p>
+                    Our website is completely custom-coded and built through Web Launch
+                    Academy. Visit{" "}
+                    <a
+                      href="https://www.weblaunchacademy.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-gold-bright underline underline-offset-4 hover:text-gold"
+                    >
+                      weblaunchacademy.com
+                    </a>{" "}
+                    or email{" "}
+                    <a
+                      href="mailto:hello@weblaunchacademy.com"
+                      className="font-bold text-gold-bright underline underline-offset-4 hover:text-gold"
+                    >
+                      hello@weblaunchacademy.com
+                    </a>{" "}
+                    to learn how to completely build, launch, and own your own digital
+                    assets. We highly recommend checking them out.
+                  </p>
+                ) : (
+                  <p>{item.a}</p>
+                )}
+              </div>
+            </details>
+          ))}
+        </div>
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: FAQS.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            }),
+          }}
+        />
+      </div>
+    </section>
+  );
+}
+
 /* --------------------------------- Contact --------------------------------- */
 
 function Contact() {
@@ -831,9 +942,12 @@ function Contact() {
     const data = new FormData(e.currentTarget);
     const name = String(data.get("name") || "");
     const email = String(data.get("email") || "");
+    const interest = String(data.get("interest") || "");
     const message = String(data.get("message") || "");
-    const subject = encodeURIComponent(`Website message from ${name}`);
-    const body = encodeURIComponent(`${message}\n\nFrom: ${name}\nReply to: ${email}`);
+    const subject = encodeURIComponent(`${interest || "Website message"}: ${name}`);
+    const body = encodeURIComponent(
+      `${message}\n\nName: ${name}\nEmail: ${email}\nInterested in: ${interest || "Not specified"}`
+    );
     window.location.href = `mailto:AmbientThread@gmail.com?subject=${subject}&body=${body}`;
     setSent(true);
   }
@@ -901,6 +1015,20 @@ function Contact() {
                   </span>
                 </a>
               </li>
+              <li className="flex items-center gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-navy text-gold-bright">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" />
+                    <circle cx="12" cy="10" r="2.5" />
+                  </svg>
+                </span>
+                <span className="font-bold text-ink">
+                  1209 Mountain Road Pl NE, Ste N
+                  <span className="block text-sm font-normal text-ink-soft">
+                    Albuquerque, NM 87110 (mailing address; we are a remote organization)
+                  </span>
+                </span>
+              </li>
             </ul>
           </div>
 
@@ -934,6 +1062,39 @@ function Contact() {
                     className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 text-paper placeholder:text-paper/40"
                     placeholder="you@example.com"
                   />
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="interest" className="mb-2 block font-bold text-paper">
+                    How would you like to get involved?
+                  </label>
+                  <div className="relative">
+                    <svg
+                      className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-bright"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m4 6 4 4 4-4" />
+                    </svg>
+                    <select
+                      id="interest"
+                      name="interest"
+                      className="w-full appearance-none rounded-md border border-white/20 bg-navy-raise px-4 py-3 pr-11 text-paper"
+                      defaultValue=""
+                    >
+                    <option value="">Just saying hello</option>
+                    <option value="Volunteering">Volunteering</option>
+                    <option value="Sharing my story">Sharing my story or lived experience</option>
+                    <option value="Pro-bono skills">Offering pro-bono skills</option>
+                    <option value="Partnership or introduction">Partnership or introduction</option>
+                    <option value="Donation question">Donation question</option>
+                      <option value="Board, committee, or internship">Board, committee, or internship</option>
+                    </select>
+                  </div>
                 </div>
                 <div className="sm:col-span-2">
                   <label htmlFor="message" className="mb-2 block font-bold text-paper">
@@ -1006,6 +1167,12 @@ function Footer() {
           deafness, or any medical condition. It is not an FDA-approved medical device or a
           registered hearing aid. Users experiencing persistent hearing difficulty should
           consult a licensed healthcare professional.
+        </p>
+
+        <p className="mt-6 max-w-4xl text-sm leading-relaxed text-paper/55">
+          Ambient Thread Foundation is a registered New Mexico non-profit organization;
+          federal 501(c)(3) tax-exempt status is pending with the IRS. EIN 42-4819969.
+          Mailing address: 1209 Mountain Road Pl NE, Ste N, Albuquerque, NM 87110.
         </p>
 
         <div className="mt-10 flex flex-col gap-3 text-sm text-paper/55 sm:flex-row sm:items-center sm:justify-between">
@@ -1083,6 +1250,7 @@ export default function Home() {
         <AppSection />
         <HowWereBuilding />
         <GetInvolved />
+        <Faq />
         <Contact />
       </main>
       <Footer />

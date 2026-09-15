@@ -51,7 +51,9 @@ body {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 3px;
   border-radius: 2px;
