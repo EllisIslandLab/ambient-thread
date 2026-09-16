@@ -906,22 +906,44 @@ function Faq() {
 
 /* --------------------------------- Contact --------------------------------- */
 
-function Contact() {
-  const [sent, setSent] = useState(false);
+const LEAD_ENDPOINT = "https://iorqovbeunehkvejcquc.supabase.co/functions/v1/submit-lead";
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+function Contact() {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const data = new FormData(form);
     const name = String(data.get("name") || "");
     const email = String(data.get("email") || "");
     const interest = String(data.get("interest") || "");
     const message = String(data.get("message") || "");
-    const subject = encodeURIComponent(`${interest || "Website message"}: ${name}`);
-    const body = encodeURIComponent(
-      `${message}\n\nName: ${name}\nEmail: ${email}\nInterested in: ${interest || "Not specified"}`
-    );
-    window.location.href = `mailto:AmbientThread@gmail.com?subject=${subject}&body=${body}`;
-    setSent(true);
+    const website = String(data.get("website") || "");
+
+    setStatus("sending");
+    try {
+      const res = await fetch(LEAD_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, interest, message, website }),
+      });
+      const result = await res.json();
+      if (res.ok && result.ok) {
+        setStatus("sent");
+        form.reset();
+        return;
+      }
+      throw new Error("submit failed");
+    } catch {
+      // Fallback: open the visitor's mail client so the message is never lost.
+      const subject = encodeURIComponent(`${interest || "Website message"}: ${name}`);
+      const body = encodeURIComponent(
+        `${message}\n\nName: ${name}\nEmail: ${email}\nInterested in: ${interest || "Not specified"}`
+      );
+      window.location.href = `mailto:AmbientThread@gmail.com?subject=${subject}&body=${body}`;
+      setStatus("error");
+    }
   }
 
   return (
@@ -1006,6 +1028,11 @@ function Contact() {
 
           <div className="lg:col-span-7">
             <form onSubmit={handleSubmit} className="rounded-lg bg-navy p-7 sm:p-10">
+              {/* Honeypot: hidden from real users, tempting to bots */}
+              <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+                <label htmlFor="website">Website</label>
+                <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+              </div>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="sm:col-span-1">
                   <label htmlFor="name" className="mb-2 block font-bold text-paper">
@@ -1084,16 +1111,17 @@ function Contact() {
               </div>
               <button
                 type="submit"
-                className="mt-8 w-full rounded-full bg-gold px-8 py-4 text-lg font-bold text-navy transition-colors duration-200 hover:bg-gold-bright sm:w-auto"
+                disabled={status === "sending"}
+                className="mt-8 w-full rounded-full bg-gold px-8 py-4 text-lg font-bold text-navy transition-colors duration-200 hover:bg-gold-bright disabled:opacity-60 sm:w-auto"
               >
-                Send Message
+                {status === "sending" ? "Sending..." : "Send Message"}
               </button>
-              {sent && (
-                <p role="status" className="mt-5 text-gold-bright">
-                  Your email app should have opened with your message ready to send. If it did
-                  not, please email us directly at AmbientThread@gmail.com.
-                </p>
-              )}
+              <p role="status" className="mt-5 min-h-[1.5rem] text-gold-bright">
+                {status === "sent" &&
+                  "Thank you! Your message is on its way. We will get back to you soon."}
+                {status === "error" &&
+                  "We could not send that automatically, so your email app should have opened instead. If it did not, please email us directly at AmbientThread@gmail.com."}
+              </p>
             </form>
           </div>
         </div>
