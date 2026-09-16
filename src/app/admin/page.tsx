@@ -22,6 +22,14 @@ type Lead = {
   created_at: string;
 };
 
+type SecureNote = {
+  id: string;
+  label: string;
+  value: string;
+  created_by: string;
+  created_at: string;
+};
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
     dateStyle: "medium",
@@ -44,6 +52,11 @@ export default function AdminPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [leads, setLeads] = useState<Lead[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [notes, setNotes] = useState<SecureNote[] | null>(null);
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [noteLabel, setNoteLabel] = useState("");
+  const [noteValue, setNoteValue] = useState("");
+  const [noteStatus, setNoteStatus] = useState<string | null>(null);
 
   // Establish the session. Magic links land with tokens in the URL hash;
   // parse them manually (createBrowserClient-style PKCE detection does not
@@ -89,9 +102,53 @@ export default function AdminPage() {
     setLeads((data as Lead[]) ?? []);
   }, []);
 
+  const loadNotes = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("secure_notes")
+      .select("id, label, value, created_by, created_at")
+      .order("created_at", { ascending: false });
+    if (!error) setNotes((data as SecureNote[]) ?? []);
+  }, []);
+
   useEffect(() => {
-    if (session) loadLeads();
-  }, [session, loadLeads]);
+    if (session) {
+      loadLeads();
+      loadNotes();
+    }
+  }, [session, loadLeads, loadNotes]);
+
+  async function addNote(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!session?.user.email) return;
+    setNoteStatus(null);
+    const { error } = await supabase.from("secure_notes").insert({
+      label: noteLabel.trim(),
+      value: noteValue,
+      created_by: session.user.email,
+    });
+    if (error) {
+      setNoteStatus("Could not save that note.");
+      return;
+    }
+    setNoteLabel("");
+    setNoteValue("");
+    setNoteStatus("Saved. Only the two admins can see it.");
+    loadNotes();
+  }
+
+  async function deleteNote(id: string) {
+    await supabase.from("secure_notes").delete().eq("id", id);
+    loadNotes();
+  }
+
+  async function copyNote(value: string, id: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setNoteStatus("Copied to clipboard.");
+    } catch {
+      setRevealed((r) => ({ ...r, [id]: true }));
+    }
+  }
 
   async function sendLink(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -248,6 +305,104 @@ export default function AdminPage() {
                 </li>
               ))}
             </ul>
+
+            {/* Secure notes: admin-to-admin secret exchange */}
+            <div className="mt-16 border-t border-white/10 pt-10">
+              <h2 className="font-display text-2xl font-semibold text-paper">Secure notes</h2>
+              <p className="mt-2 max-w-2xl text-sm text-paper/60">
+                A private channel between the two site admins for passing API keys and
+                credentials. Nothing here ever travels by email or text. Delete a note once
+                the other admin has picked it up.
+              </p>
+
+              <form onSubmit={addNote} className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label htmlFor="note-label" className="mb-2 block text-sm font-bold text-paper">
+                    Label
+                  </label>
+                  <input
+                    id="note-label"
+                    required
+                    maxLength={200}
+                    value={noteLabel}
+                    onChange={(e) => setNoteLabel(e.target.value)}
+                    className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 text-paper placeholder:text-paper/40"
+                    placeholder="e.g. Zeffy API key"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="note-value" className="mb-2 block text-sm font-bold text-paper">
+                    Secret
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      id="note-value"
+                      required
+                      maxLength={10000}
+                      value={noteValue}
+                      onChange={(e) => setNoteValue(e.target.value)}
+                      autoComplete="off"
+                      className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 font-mono text-sm text-paper placeholder:text-paper/40"
+                      placeholder="Paste the key or credential here"
+                    />
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-full bg-gold px-6 py-2 text-sm font-bold text-navy hover:bg-gold-bright"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </form>
+              {noteStatus && (
+                <p role="status" className="mt-3 text-sm text-gold-bright">
+                  {noteStatus}
+                </p>
+              )}
+
+              <ul className="mt-6 space-y-3">
+                {(notes ?? []).map((note) => (
+                  <li key={note.id} className="rounded-lg bg-navy-raise p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-bold text-paper">{note.label}</p>
+                        <p className="text-xs text-paper/50">
+                          from {note.created_by} on {formatDate(note.created_at)}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setRevealed((r) => ({ ...r, [note.id]: !r[note.id] }))}
+                          className="rounded-full border border-paper/30 px-4 py-1.5 text-xs font-bold text-paper hover:border-gold hover:text-gold-bright"
+                        >
+                          {revealed[note.id] ? "Hide" : "Reveal"}
+                        </button>
+                        <button
+                          onClick={() => copyNote(note.value, note.id)}
+                          className="rounded-full border border-paper/30 px-4 py-1.5 text-xs font-bold text-paper hover:border-gold hover:text-gold-bright"
+                        >
+                          Copy
+                        </button>
+                        <button
+                          onClick={() => deleteNote(note.id)}
+                          className="rounded-full border border-gold/50 px-4 py-1.5 text-xs font-bold text-gold-bright hover:bg-gold hover:text-navy"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    {revealed[note.id] && (
+                      <p className="mt-3 break-all rounded-md bg-navy p-3 font-mono text-sm text-gold-bright">
+                        {note.value}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {notes !== null && notes.length === 0 && (
+                <p className="mt-4 text-sm text-paper/50">No notes right now.</p>
+              )}
+            </div>
           </section>
         )}
       </div>
