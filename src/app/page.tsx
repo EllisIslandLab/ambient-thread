@@ -849,10 +849,6 @@ const FAQS = [
     q: "Can I volunteer remotely from any location?",
     a: "Yes! Because we are a remote organization, we have plenty of digital and remote volunteer opportunities. Please email us to get started.",
   },
-  {
-    q: "Your website is beautiful and incredibly fast! How did you build it and how can I create one like this?",
-    a: "Our website is completely custom-coded and built through Web Launch Academy. Visit weblaunchacademy.com or email hello@weblaunchacademy.com to learn how to completely build, launch, and own your own digital assets. We highly recommend checking them out.",
-  },
 ];
 
 function Faq() {
@@ -883,31 +879,7 @@ function Faq() {
                 </svg>
               </summary>
               <div className="pb-7 pr-10 leading-relaxed text-paper/80">
-                {item.q.startsWith("Your website") ? (
-                  <p>
-                    Our website is completely custom-coded and built through Web Launch
-                    Academy. Visit{" "}
-                    <a
-                      href="https://www.weblaunchacademy.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-bold text-gold-bright underline underline-offset-4 hover:text-gold"
-                    >
-                      weblaunchacademy.com
-                    </a>{" "}
-                    or email{" "}
-                    <a
-                      href="mailto:hello@weblaunchacademy.com"
-                      className="font-bold text-gold-bright underline underline-offset-4 hover:text-gold"
-                    >
-                      hello@weblaunchacademy.com
-                    </a>{" "}
-                    to learn how to completely build, launch, and own your own digital
-                    assets. We highly recommend checking them out.
-                  </p>
-                ) : (
-                  <p>{item.a}</p>
-                )}
+                <p>{item.a}</p>
               </div>
             </details>
           ))}
