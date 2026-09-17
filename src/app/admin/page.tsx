@@ -45,7 +45,15 @@ type SecureNote = {
   created_at: string;
 };
 
-type Tab = "messages" | "donations" | "notes";
+type Tab = "messages" | "donations" | "notes" | "dns";
+
+/* DNS records for pointing ambientthread.org at the new website (Vercel).
+   Read from the Vercel project's own config; the values are stable. */
+const DNS_WEBSITE_RECORDS = [
+  { type: "A", name: "@", value: "216.198.79.1", note: "the domain itself" },
+  { type: "A", name: "@", value: "64.29.17.1", note: "the domain itself, second address" },
+  { type: "CNAME", name: "www", value: "07ba9b6183ee63a2.vercel-dns-017.com", note: "the www version" },
+];
 
 /* -------------------------------- Helpers ---------------------------------- */
 
@@ -137,6 +145,35 @@ function GoldButton({
     >
       {children}
     </button>
+  );
+}
+
+function CopyField({ value, mono = true }: { value: string; mono?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <span className="inline-flex max-w-full items-center gap-2">
+      <code
+        className={`truncate rounded bg-navy-deep px-2 py-1 text-[0.82rem] text-paper/85 ${mono ? "font-mono" : ""}`}
+      >
+        {value}
+      </code>
+      <button
+        type="button"
+        aria-label={`Copy ${value}`}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          } catch {
+            /* clipboard unavailable: the value is selectable text */
+          }
+        }}
+        className="shrink-0 rounded-full border border-paper/25 px-2.5 py-1 text-[0.7rem] font-bold text-paper/70 transition-colors duration-150 hover:border-gold hover:text-gold-bright active:translate-y-px"
+      >
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </span>
   );
 }
 
@@ -331,6 +368,7 @@ export default function AdminPage() {
     { id: "messages", label: "Messages", count: leads?.length ?? null },
     { id: "donations", label: "Donations", count: donations?.length ?? null },
     { id: "notes", label: "Secure Notes", count: notes?.length ?? null },
+    { id: "dns", label: "DNS Setup", count: null },
   ];
 
   return (
@@ -646,6 +684,82 @@ export default function AdminPage() {
                     </table>
                   </div>
                 )}
+              </section>
+            )}
+
+            {/* ----------------------------- DNS Setup ------------------------------ */}
+            {tab === "dns" && (
+              <section role="tabpanel" aria-label="DNS setup">
+                <p className="mt-6 max-w-2xl text-sm text-paper/55">
+                  The records below get added at Northwest Registered Agent (log in, open
+                  ambientthread.org, then DNS Records). Use the copy buttons so nothing is
+                  mistyped. Leave TTL at its default on every record.
+                </p>
+
+                <div className="mt-6 rounded-md border border-gold/40 bg-navy-raise p-4">
+                  <p className="text-sm text-paper/80">
+                    <span className="font-bold text-gold-bright">Hold off on this section: </span>
+                    these website records go in during our Zoom call, after final testing. The
+                    moment they are added, the new website replaces the old one.
+                  </p>
+                </div>
+
+                <h2 className="font-display mt-8 text-xl font-semibold text-paper">
+                  Website records (for the call)
+                </h2>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full min-w-[560px] text-left text-sm">
+                    <thead>
+                      <tr className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper/45">
+                        <th scope="col" className="py-3 pr-4 font-bold">Type</th>
+                        <th scope="col" className="py-3 pr-4 font-bold">Name</th>
+                        <th scope="col" className="py-3 pr-4 font-bold">Value</th>
+                        <th scope="col" className="py-3 font-bold">What it covers</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.06]">
+                      {DNS_WEBSITE_RECORDS.map((r, i) => (
+                        <tr key={i} className="align-middle">
+                          <td className="py-3 pr-4 font-bold text-paper">{r.type}</td>
+                          <td className="py-3 pr-4">
+                            <CopyField value={r.name} />
+                          </td>
+                          <td className="max-w-[300px] py-3 pr-4">
+                            <CopyField value={r.value} />
+                          </td>
+                          <td className="py-3 text-paper/55">{r.note}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-3 text-sm text-paper/55">
+                  If Northwest will not accept @ as the Name, leave the Name field empty
+                  instead; both mean the domain itself. The old records currently pointing @
+                  and www at the WordPress host get deleted at the same time (we will identify
+                  those together).
+                </p>
+
+                <h2 className="font-display mt-10 text-xl font-semibold text-paper">
+                  Email records (Resend)
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm text-paper/55">
+                  These are unique to your Resend account, so they are not listed here: find
+                  them in Resend under Domains, then click ambientthread.org. Copy each one
+                  from that page into Northwest the same way. These are safe to add anytime;
+                  they do not affect the current website.
+                </p>
+                <div className="mt-4 rounded-md bg-navy-raise p-4">
+                  <p className="text-sm text-paper/80">
+                    <span className="font-bold text-gold-bright">One quirk at Northwest: </span>
+                    enter each Name without the ambientthread.org ending. So
+                    &ldquo;send.ambientthread.org&rdquo; becomes just{" "}
+                    <code className="rounded bg-navy-deep px-1.5 py-0.5 font-mono text-[0.82rem]">send</code>
+                    , and &ldquo;resend._domainkey.ambientthread.org&rdquo; becomes{" "}
+                    <code className="rounded bg-navy-deep px-1.5 py-0.5 font-mono text-[0.82rem]">resend._domainkey</code>
+                    . The MX record also asks for a Priority: use the number Resend shows.
+                  </p>
+                </div>
               </section>
             )}
 
