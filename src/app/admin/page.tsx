@@ -1,11 +1,10 @@
 "use client";
 
-// Admin dashboard for Ambient Thread Foundation.
-// Sign-in: Supabase magic link (signups disabled; only pre-created admin
-// users exist). Data access is enforced by RLS: the leads SELECT policy
-// allows only the admin emails, so this page holds no secrets — the
-// publishable key below is public by design.
-import { useCallback, useEffect, useState } from "react";
+// Admin console for Ambient Thread Foundation.
+// Auth: Supabase magic link (signups disabled; two pre-created admins).
+// Access control is enforced by RLS on every table this page reads, so the
+// page itself holds no secrets; the publishable key below is public by design.
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { createClient, type Session } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -13,20 +12,14 @@ const supabase = createClient(
   "sb_publishable_ZLEqxC3sYSKRho_M_tih_A_IJG-JFeH"
 );
 
+/* --------------------------------- Types ----------------------------------- */
+
 type Lead = {
   id: string;
   name: string;
   email: string;
   interest: string;
   message: string;
-  created_at: string;
-};
-
-type SecureNote = {
-  id: string;
-  label: string;
-  value: string;
-  created_by: string;
   created_at: string;
 };
 
@@ -44,55 +37,159 @@ type Donation = {
   receipt_url: string | null;
 };
 
-function money(cents: number, currency: string): string {
+type SecureNote = {
+  id: string;
+  label: string;
+  value: string;
+  created_by: string;
+  created_at: string;
+};
+
+type Tab = "messages" | "donations" | "notes";
+
+/* -------------------------------- Helpers ---------------------------------- */
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function formatDay(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function money(cents: number, currency = "usd"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: (currency || "usd").toUpperCase(),
+    currency: currency.toUpperCase(),
+    maximumFractionDigits: cents % 100 === 0 ? 0 : 2,
   }).format(cents / 100);
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+function donorName(d: Donation): string {
+  return (
+    `${d.donor_first_name ?? ""} ${d.donor_last_name ?? ""}`.trim() || d.company_name || "Anonymous"
+  );
 }
 
-function toCsv(leads: Lead[]): string {
-  const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
-  const rows = leads.map((l) =>
-    [formatDate(l.created_at), l.name, l.email, l.interest, l.message].map(esc).join(",")
-  );
-  return ["Date,Name,Email,Interest,Message", ...rows].join("\r\n");
+function downloadCsv(filename: string, header: string, rows: string[][]) {
+  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const csv = [header, ...rows.map((r) => r.map(esc).join(","))].join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
+
+/* ------------------------------ Small pieces -------------------------------- */
+
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="border-l-2 border-gold/60 pl-4">
+      <p className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper/50">{label}</p>
+      <p className="font-display mt-1 text-3xl font-semibold text-paper [font-variant-numeric:tabular-nums]">
+        {value}
+      </p>
+      {hint && <p className="mt-0.5 text-xs text-paper/45">{hint}</p>}
+    </div>
+  );
+}
+
+function GhostButton({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-full border border-paper/25 px-4 py-1.5 text-sm font-bold text-paper transition-colors duration-150 hover:border-gold hover:text-gold-bright active:translate-y-px disabled:opacity-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+function GoldButton({
+  children,
+  onClick,
+  disabled,
+  type = "button",
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: "button" | "submit";
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-full bg-gold px-4 py-1.5 text-sm font-bold text-navy transition-colors duration-150 hover:bg-gold-bright active:translate-y-px disabled:opacity-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+function EmptyState({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="mt-10 rounded-lg border border-dashed border-paper/20 px-6 py-12 text-center">
+      <p className="font-display text-xl font-semibold text-paper/80">{title}</p>
+      <p className="mx-auto mt-2 max-w-md text-sm text-paper/55">{body}</p>
+    </div>
+  );
+}
+
+function LoadingRows() {
+  return (
+    <div className="mt-8 space-y-2" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="h-11 animate-pulse rounded-md bg-navy-raise" style={{ opacity: 1 - i * 0.25 }} />
+      ))}
+    </div>
+  );
+}
+
+/* ---------------------------------- Page ------------------------------------ */
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("messages");
+
   const [leads, setLeads] = useState<Lead[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [leadsError, setLeadsError] = useState<string | null>(null);
+  const [openLead, setOpenLead] = useState<string | null>(null);
+
   const [donations, setDonations] = useState<Donation[] | null>(null);
+  const [donationsError, setDonationsError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+
   const [notes, setNotes] = useState<SecureNote[] | null>(null);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [noteLabel, setNoteLabel] = useState("");
   const [noteValue, setNoteValue] = useState("");
   const [noteStatus, setNoteStatus] = useState<string | null>(null);
 
-  // Establish the session. Magic links land with tokens in the URL hash;
-  // parse them manually (createBrowserClient-style PKCE detection does not
-  // apply to hash tokens) and fall back to any stored session.
+  /* Session bootstrap: magic links land with tokens in the URL hash. */
   useEffect(() => {
     (async () => {
       const params = new URLSearchParams(window.location.hash.slice(1));
       const accessToken = params.get("access_token");
       const refreshToken = params.get("refresh_token");
       const hashError = params.get("error_description");
-      if (hashError) {
-        setNotice(hashError.replace(/\+/g, " "));
-      }
+      if (hashError) setNotice(hashError.replace(/\+/g, " "));
       if (accessToken && refreshToken) {
         const { data } = await supabase.auth.setSession({
           access_token: accessToken,
@@ -112,17 +209,33 @@ export default function AdminPage() {
   }, []);
 
   const loadLeads = useCallback(async () => {
-    setLoadError(null);
+    setLeadsError(null);
     const { data, error } = await supabase
       .from("leads")
       .select("id, name, email, interest, message, created_at")
       .order("created_at", { ascending: false });
     if (error) {
-      setLoadError("Could not load messages. Your account may not have admin access.");
+      setLeadsError("Could not load messages. Your account may not have admin access.");
       setLeads([]);
       return;
     }
     setLeads((data as Lead[]) ?? []);
+  }, []);
+
+  const loadDonations = useCallback(async () => {
+    setDonationsError(null);
+    const { data, error } = await supabase
+      .from("donations")
+      .select(
+        "id, created_at, amount_cents, currency, status, refund_status, donor_email, donor_first_name, donor_last_name, company_name, receipt_url"
+      )
+      .order("created_at", { ascending: false });
+    if (error) {
+      setDonationsError("Could not load donations. Your account may not have admin access.");
+      setDonations([]);
+      return;
+    }
+    setDonations((data as Donation[]) ?? []);
   }, []);
 
   const loadNotes = useCallback(async () => {
@@ -133,16 +246,6 @@ export default function AdminPage() {
     if (!error) setNotes((data as SecureNote[]) ?? []);
   }, []);
 
-  const loadDonations = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("donations")
-      .select(
-        "id, created_at, amount_cents, currency, status, refund_status, donor_email, donor_first_name, donor_last_name, company_name, receipt_url"
-      )
-      .order("created_at", { ascending: false });
-    if (!error) setDonations((data as Donation[]) ?? []);
-  }, []);
-
   useEffect(() => {
     if (session) {
       loadLeads();
@@ -150,6 +253,28 @@ export default function AdminPage() {
       loadNotes();
     }
   }, [session, loadLeads, loadDonations, loadNotes]);
+
+  async function sendLink(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setNotice(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/admin`, shouldCreateUser: false },
+    });
+    setNotice(
+      error
+        ? "Could not send a sign-in link to that address. Only foundation admins can sign in."
+        : "Check your email for a sign-in link. It expires in one hour."
+    );
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setSession(null);
+    setLeads(null);
+    setDonations(null);
+    setNotes(null);
+  }
 
   async function syncDonations() {
     if (!session) return;
@@ -163,31 +288,6 @@ export default function AdminPage() {
     } finally {
       setSyncing(false);
     }
-  }
-
-  function downloadDonationsCsv() {
-    if (!donations?.length) return;
-    const esc = (v: string | number | null) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const rows = donations.map((d) =>
-      [
-        formatDate(d.created_at),
-        `${d.donor_first_name ?? ""} ${d.donor_last_name ?? ""}`.trim(),
-        d.donor_email,
-        d.company_name,
-        (d.amount_cents / 100).toFixed(2),
-        d.currency.toUpperCase(),
-        d.status,
-        d.refund_status,
-      ].map(esc).join(",")
-    );
-    const csv = ["Date,Donor,Email,Company,Amount,Currency,Status,Refund Status", ...rows].join("\r\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ambient-thread-donations-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   }
 
   async function addNote(e: React.FormEvent<HTMLFormElement>) {
@@ -223,72 +323,43 @@ export default function AdminPage() {
     }
   }
 
-  async function sendLink(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setNotice(null);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/admin`,
-        shouldCreateUser: false,
-      },
-    });
-    if (error) {
-      setNotice(
-        "Could not send a sign-in link to that address. Only foundation admins can sign in."
-      );
-    } else {
-      setNotice("Check your email for a sign-in link. It expires in one hour.");
-    }
-  }
+  const totalCents = (donations ?? [])
+    .filter((d) => !d.refund_status || d.refund_status === "none")
+    .reduce((sum, d) => sum + d.amount_cents, 0);
 
-  async function signOut() {
-    await supabase.auth.signOut();
-    setSession(null);
-    setLeads(null);
-  }
-
-  function downloadCsv() {
-    if (!leads?.length) return;
-    const blob = new Blob([toCsv(leads)], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ambient-thread-leads-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  const TABS: { id: Tab; label: string; count: number | null }[] = [
+    { id: "messages", label: "Messages", count: leads?.length ?? null },
+    { id: "donations", label: "Donations", count: donations?.length ?? null },
+    { id: "notes", label: "Secure Notes", count: notes?.length ?? null },
+  ];
 
   return (
-    <main className="min-h-screen bg-navy px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-5xl">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
+    <main className="min-h-[100dvh] bg-navy px-5 py-8 sm:px-8">
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <header className="flex flex-wrap items-center justify-between gap-4 pb-6">
           <div className="flex items-center gap-3">
-            <img src="/images/logo.png" alt="" className="h-11 w-11 rounded-sm object-contain" />
+            <img src="/images/logo.png" alt="" className="h-10 w-10 rounded-sm object-contain" />
             <div>
-              <p className="font-display text-lg font-semibold tracking-[0.14em] text-paper">
+              <p className="font-display text-base font-semibold tracking-[0.14em] text-paper">
                 AMBIENT THREAD
               </p>
-              <p className="eyebrow text-gold-bright">Admin Dashboard</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold-bright">Admin</p>
             </div>
           </div>
           {session && (
             <div className="flex items-center gap-4">
-              <span className="text-sm text-paper/60">{session.user.email}</span>
-              <button
-                onClick={signOut}
-                className="rounded-full border border-paper/30 px-5 py-2 text-sm font-bold text-paper hover:border-gold hover:text-gold-bright"
-              >
-                Sign Out
-              </button>
+              <span className="hidden text-sm text-paper/55 sm:inline">{session.user.email}</span>
+              <GhostButton onClick={signOut}>Sign Out</GhostButton>
             </div>
           )}
         </header>
 
         {checking ? (
-          <p className="mt-10 text-paper/70">Checking your session...</p>
+          <LoadingRows />
         ) : !session ? (
-          <div className="mx-auto mt-14 max-w-md">
+          /* ------------------------------ Sign-in ------------------------------ */
+          <div className="mx-auto mt-12 max-w-md">
             <h1 className="font-display text-3xl font-semibold text-paper">Admin sign-in</h1>
             <p className="mt-3 text-paper/70">
               Enter your admin email and we will send you a sign-in link.
@@ -309,7 +380,7 @@ export default function AdminPage() {
               />
               <button
                 type="submit"
-                className="mt-6 w-full rounded-full bg-gold px-8 py-3.5 font-bold text-navy hover:bg-gold-bright"
+                className="mt-6 w-full rounded-full bg-gold px-8 py-3.5 font-bold text-navy transition-colors duration-150 hover:bg-gold-bright active:translate-y-px"
               >
                 Send Sign-In Link
               </button>
@@ -321,249 +392,352 @@ export default function AdminPage() {
             )}
           </div>
         ) : (
-          <section className="mt-10">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <h1 className="font-display text-3xl font-semibold text-paper">
-                Website messages
-                {leads !== null && (
-                  <span className="ml-3 text-xl text-paper/50">({leads.length})</span>
-                )}
-              </h1>
-              <div className="flex gap-3">
+          <>
+            {/* Stats */}
+            <section aria-label="Overview" className="grid grid-cols-1 gap-6 border-y border-white/10 py-6 sm:grid-cols-3">
+              <Stat
+                label="Total raised"
+                value={donations === null ? "..." : money(totalCents)}
+                hint="via Zeffy, refunds excluded"
+              />
+              <Stat
+                label="Gifts"
+                value={donations === null ? "..." : String(donations.length)}
+                hint="synced daily each morning"
+              />
+              <Stat
+                label="Messages"
+                value={leads === null ? "..." : String(leads.length)}
+                hint="from the website contact form"
+              />
+            </section>
+
+            {/* Tabs */}
+            <div role="tablist" aria-label="Admin sections" className="mt-8 flex gap-1 border-b border-white/10">
+              {TABS.map((t) => (
                 <button
-                  onClick={loadLeads}
-                  className="rounded-full border border-paper/30 px-5 py-2 text-sm font-bold text-paper hover:border-gold hover:text-gold-bright"
+                  key={t.id}
+                  role="tab"
+                  aria-selected={tab === t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-bold transition-colors duration-150 ${
+                    tab === t.id
+                      ? "border-gold text-gold-bright"
+                      : "border-transparent text-paper/60 hover:text-paper"
+                  }`}
                 >
-                  Refresh
-                </button>
-                <button
-                  onClick={downloadCsv}
-                  disabled={!leads?.length}
-                  className="rounded-full bg-gold px-5 py-2 text-sm font-bold text-navy hover:bg-gold-bright disabled:opacity-50"
-                >
-                  Download CSV
-                </button>
-              </div>
-            </div>
-
-            {loadError && (
-              <p role="alert" className="mt-6 rounded-md border border-gold/40 bg-navy-raise p-4 text-gold-bright">
-                {loadError}
-              </p>
-            )}
-
-            {leads !== null && leads.length === 0 && !loadError && (
-              <p className="mt-10 text-paper/70">
-                No messages yet. When someone submits the contact form, it will appear here.
-              </p>
-            )}
-
-            <ul className="mt-8 space-y-4">
-              {(leads ?? []).map((lead) => (
-                <li key={lead.id} className="rounded-lg bg-navy-raise p-6">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-bold text-paper">
-                      {lead.name}
-                      <a
-                        href={`mailto:${lead.email}`}
-                        className="ml-3 font-normal text-gold-bright underline underline-offset-4"
-                      >
-                        {lead.email}
-                      </a>
-                    </p>
-                    <p className="text-sm text-paper/50">{formatDate(lead.created_at)}</p>
-                  </div>
-                  <p className="eyebrow mt-3 text-gold-bright">{lead.interest}</p>
-                  <p className="mt-2 whitespace-pre-wrap text-paper/85">{lead.message}</p>
-                </li>
-              ))}
-            </ul>
-
-            {/* Donations synced from Zeffy */}
-            <div className="mt-16 border-t border-white/10 pt-10">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <h2 className="font-display text-2xl font-semibold text-paper">
-                  Donations
-                  {donations !== null && (
-                    <span className="ml-3 text-lg text-paper/50">
-                      ({donations.length} gifts,{" "}
-                      {money(
-                        donations
-                          .filter((d) => !d.refund_status || d.refund_status === "none")
-                          .reduce((sum, d) => sum + d.amount_cents, 0),
-                        donations[0]?.currency ?? "usd"
-                      )}{" "}
-                      total)
+                  {t.label}
+                  {t.count !== null && t.count > 0 && (
+                    <span className="ml-2 rounded-full bg-navy-raise px-2 py-0.5 text-xs font-bold text-paper/60 [font-variant-numeric:tabular-nums]">
+                      {t.count}
                     </span>
                   )}
-                </h2>
-                <div className="flex gap-3">
-                  <button
-                    onClick={syncDonations}
-                    disabled={syncing}
-                    className="rounded-full border border-paper/30 px-5 py-2 text-sm font-bold text-paper hover:border-gold hover:text-gold-bright disabled:opacity-50"
-                  >
-                    {syncing ? "Syncing..." : "Sync from Zeffy"}
-                  </button>
-                  <button
-                    onClick={downloadDonationsCsv}
-                    disabled={!donations?.length}
-                    className="rounded-full bg-gold px-5 py-2 text-sm font-bold text-navy hover:bg-gold-bright disabled:opacity-50"
-                  >
-                    Download CSV
-                  </button>
-                </div>
-              </div>
-              <p className="mt-2 text-sm text-paper/60">
-                Synced automatically from Zeffy every morning. Use Sync from Zeffy to pull
-                the latest right now.
-              </p>
-
-              {donations !== null && donations.length === 0 && (
-                <p className="mt-8 text-paper/70">No donations synced yet.</p>
-              )}
-
-              <ul className="mt-8 space-y-3">
-                {(donations ?? []).map((d) => (
-                  <li key={d.id} className="rounded-lg bg-navy-raise p-5">
-                    <div className="flex flex-wrap items-baseline justify-between gap-3">
-                      <p className="font-bold text-paper">
-                        {`${d.donor_first_name ?? ""} ${d.donor_last_name ?? ""}`.trim() ||
-                          d.company_name ||
-                          "Anonymous"}
-                        {d.donor_email && (
-                          <a
-                            href={`mailto:${d.donor_email}`}
-                            className="ml-3 font-normal text-gold-bright underline underline-offset-4"
-                          >
-                            {d.donor_email}
-                          </a>
-                        )}
-                      </p>
-                      <p className="font-display text-2xl font-semibold text-gold-bright">
-                        {money(d.amount_cents, d.currency)}
-                      </p>
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-paper/50">
-                      <span>{formatDate(d.created_at)}</span>
-                      {d.status && <span>{d.status}</span>}
-                      {d.refund_status && d.refund_status !== "none" && (
-                        <span className="font-bold text-gold-bright">refund: {d.refund_status}</span>
-                      )}
-                      {d.receipt_url && (
-                        <a
-                          href={d.receipt_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-4 hover:text-gold-bright"
-                        >
-                          Receipt
-                        </a>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                </button>
+              ))}
             </div>
 
-            {/* Secure notes: admin-to-admin secret exchange */}
-            <div className="mt-16 border-t border-white/10 pt-10">
-              <h2 className="font-display text-2xl font-semibold text-paper">Secure notes</h2>
-              <p className="mt-2 max-w-2xl text-sm text-paper/60">
-                A private channel between the two site admins for passing API keys and
-                credentials. Nothing here ever travels by email or text. Delete a note once
-                the other admin has picked it up.
-              </p>
-
-              <form onSubmit={addNote} className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label htmlFor="note-label" className="mb-2 block text-sm font-bold text-paper">
-                    Label
-                  </label>
-                  <input
-                    id="note-label"
-                    required
-                    maxLength={200}
-                    value={noteLabel}
-                    onChange={(e) => setNoteLabel(e.target.value)}
-                    className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 text-paper placeholder:text-paper/40"
-                    placeholder="e.g. Zeffy API key"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label htmlFor="note-value" className="mb-2 block text-sm font-bold text-paper">
-                    Secret
-                  </label>
-                  <div className="flex gap-3">
-                    <input
-                      id="note-value"
-                      required
-                      maxLength={10000}
-                      value={noteValue}
-                      onChange={(e) => setNoteValue(e.target.value)}
-                      autoComplete="off"
-                      className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 font-mono text-sm text-paper placeholder:text-paper/40"
-                      placeholder="Paste the key or credential here"
-                    />
-                    <button
-                      type="submit"
-                      className="shrink-0 rounded-full bg-gold px-6 py-2 text-sm font-bold text-navy hover:bg-gold-bright"
+            {/* ------------------------------ Messages ----------------------------- */}
+            {tab === "messages" && (
+              <section role="tabpanel" aria-label="Messages">
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-paper/55">
+                    Contact-form submissions, newest first. Select a row to read the full message.
+                  </p>
+                  <div className="flex gap-2">
+                    <GhostButton onClick={loadLeads}>Refresh</GhostButton>
+                    <GoldButton
+                      onClick={() =>
+                        leads?.length &&
+                        downloadCsv(
+                          `ambient-thread-messages-${new Date().toISOString().slice(0, 10)}.csv`,
+                          "Date,Name,Email,Interest,Message",
+                          leads.map((l) => [formatDate(l.created_at), l.name, l.email, l.interest, l.message])
+                        )
+                      }
+                      disabled={!leads?.length}
                     >
-                      Save
-                    </button>
+                      Download CSV
+                    </GoldButton>
                   </div>
                 </div>
-              </form>
-              {noteStatus && (
-                <p role="status" className="mt-3 text-sm text-gold-bright">
-                  {noteStatus}
-                </p>
-              )}
 
-              <ul className="mt-6 space-y-3">
-                {(notes ?? []).map((note) => (
-                  <li key={note.id} className="rounded-lg bg-navy-raise p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="font-bold text-paper">{note.label}</p>
-                        <p className="text-xs text-paper/50">
-                          from {note.created_by} on {formatDate(note.created_at)}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setRevealed((r) => ({ ...r, [note.id]: !r[note.id] }))}
-                          className="rounded-full border border-paper/30 px-4 py-1.5 text-xs font-bold text-paper hover:border-gold hover:text-gold-bright"
-                        >
-                          {revealed[note.id] ? "Hide" : "Reveal"}
-                        </button>
-                        <button
-                          onClick={() => copyNote(note.value, note.id)}
-                          className="rounded-full border border-paper/30 px-4 py-1.5 text-xs font-bold text-paper hover:border-gold hover:text-gold-bright"
-                        >
-                          Copy
-                        </button>
-                        <button
-                          onClick={() => deleteNote(note.id)}
-                          className="rounded-full border border-gold/50 px-4 py-1.5 text-xs font-bold text-gold-bright hover:bg-gold hover:text-navy"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                {leadsError && (
+                  <p role="alert" className="mt-6 rounded-md border border-gold/40 bg-navy-raise p-4 text-gold-bright">
+                    {leadsError}
+                  </p>
+                )}
+
+                {leads === null ? (
+                  <LoadingRows />
+                ) : leads.length === 0 && !leadsError ? (
+                  <EmptyState
+                    title="No messages yet"
+                    body="When someone submits the contact form on the website, it will appear here and stay even after you read it."
+                  />
+                ) : (
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-left text-sm">
+                      <thead>
+                        <tr className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper/45">
+                          <th scope="col" className="py-3 pr-4 font-bold">Date</th>
+                          <th scope="col" className="py-3 pr-4 font-bold">Name</th>
+                          <th scope="col" className="py-3 pr-4 font-bold">Email</th>
+                          <th scope="col" className="py-3 pr-4 font-bold">Interest</th>
+                          <th scope="col" className="py-3 font-bold">Message</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.06]">
+                        {leads.map((l) => (
+                          <Fragment key={l.id}>
+                            <tr
+                              onClick={() => setOpenLead(openLead === l.id ? null : l.id)}
+                              className="cursor-pointer align-top transition-colors duration-150 hover:bg-navy-raise/60"
+                            >
+                              <td className="whitespace-nowrap py-3 pr-4 text-paper/55 [font-variant-numeric:tabular-nums]">
+                                {formatDay(l.created_at)}
+                              </td>
+                              <td className="py-3 pr-4 font-bold text-paper">{l.name}</td>
+                              <td className="py-3 pr-4">
+                                <a
+                                  href={`mailto:${l.email}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-gold-bright underline-offset-4 hover:underline"
+                                >
+                                  {l.email}
+                                </a>
+                              </td>
+                              <td className="py-3 pr-4 text-paper/70">{l.interest}</td>
+                              <td className="max-w-[280px] py-3 text-paper/70">
+                                {openLead === l.id ? (
+                                  <span className="text-xs font-bold text-gold-bright">shown below</span>
+                                ) : (
+                                  <span className="line-clamp-1">{l.message}</span>
+                                )}
+                              </td>
+                            </tr>
+                            {openLead === l.id && (
+                              <tr className="bg-navy-raise/40">
+                                <td colSpan={5} className="px-4 py-4">
+                                  <p className="whitespace-pre-wrap text-paper/85">{l.message}</p>
+                                  <p className="mt-3 text-xs text-paper/45">
+                                    Received {formatDate(l.created_at)}
+                                  </p>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ----------------------------- Donations ----------------------------- */}
+            {tab === "donations" && (
+              <section role="tabpanel" aria-label="Donations">
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-paper/55">
+                    Mirrored from Zeffy automatically every morning.
+                  </p>
+                  <div className="flex gap-2">
+                    <GhostButton onClick={syncDonations} disabled={syncing}>
+                      {syncing ? "Syncing..." : "Sync from Zeffy"}
+                    </GhostButton>
+                    <GoldButton
+                      onClick={() =>
+                        donations?.length &&
+                        downloadCsv(
+                          `ambient-thread-donations-${new Date().toISOString().slice(0, 10)}.csv`,
+                          "Date,Donor,Email,Company,Amount,Currency,Status,Refund Status",
+                          donations.map((d) => [
+                            formatDate(d.created_at),
+                            donorName(d),
+                            d.donor_email ?? "",
+                            d.company_name ?? "",
+                            (d.amount_cents / 100).toFixed(2),
+                            d.currency.toUpperCase(),
+                            d.status ?? "",
+                            d.refund_status ?? "",
+                          ])
+                        )
+                      }
+                      disabled={!donations?.length}
+                    >
+                      Download CSV
+                    </GoldButton>
+                  </div>
+                </div>
+
+                {donationsError && (
+                  <p role="alert" className="mt-6 rounded-md border border-gold/40 bg-navy-raise p-4 text-gold-bright">
+                    {donationsError}
+                  </p>
+                )}
+
+                {donations === null ? (
+                  <LoadingRows />
+                ) : donations.length === 0 && !donationsError ? (
+                  <EmptyState
+                    title="No donations synced yet"
+                    body="Gifts made on the Zeffy donation page land here automatically. Use Sync from Zeffy to pull the latest right now."
+                  />
+                ) : (
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-left text-sm">
+                      <thead>
+                        <tr className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper/45">
+                          <th scope="col" className="py-3 pr-4 font-bold">Date</th>
+                          <th scope="col" className="py-3 pr-4 font-bold">Donor</th>
+                          <th scope="col" className="py-3 pr-4 font-bold">Email</th>
+                          <th scope="col" className="py-3 pr-4 text-right font-bold">Amount</th>
+                          <th scope="col" className="py-3 pr-4 font-bold">Status</th>
+                          <th scope="col" className="py-3 font-bold">Receipt</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.06]">
+                        {donations.map((d) => (
+                          <tr key={d.id} className="align-top">
+                            <td className="whitespace-nowrap py-3 pr-4 text-paper/55 [font-variant-numeric:tabular-nums]">
+                              {formatDay(d.created_at)}
+                            </td>
+                            <td className="py-3 pr-4 font-bold text-paper">{donorName(d)}</td>
+                            <td className="py-3 pr-4">
+                              {d.donor_email ? (
+                                <a
+                                  href={`mailto:${d.donor_email}`}
+                                  className="text-gold-bright underline-offset-4 hover:underline"
+                                >
+                                  {d.donor_email}
+                                </a>
+                              ) : (
+                                <span className="text-paper/40">none</span>
+                              )}
+                            </td>
+                            <td className="whitespace-nowrap py-3 pr-4 text-right font-bold text-gold-bright [font-variant-numeric:tabular-nums]">
+                              {money(d.amount_cents, d.currency)}
+                            </td>
+                            <td className="py-3 pr-4 text-paper/70">
+                              {d.status ?? ""}
+                              {d.refund_status && d.refund_status !== "none" && (
+                                <span className="ml-2 font-bold text-gold-bright">
+                                  refund: {d.refund_status}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3">
+                              {d.receipt_url ? (
+                                <a
+                                  href={d.receipt_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-paper/60 underline underline-offset-4 hover:text-gold-bright"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                <span className="text-paper/40">none</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ---------------------------- Secure Notes ---------------------------- */}
+            {tab === "notes" && (
+              <section role="tabpanel" aria-label="Secure notes">
+                <p className="mt-6 max-w-2xl text-sm text-paper/55">
+                  A private channel between the two site admins for passing API keys and
+                  credentials. Nothing here travels by email or text. Delete each note once the
+                  other admin has picked it up.
+                </p>
+
+                <form onSubmit={addNote} className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div>
+                    <label htmlFor="note-label" className="mb-2 block text-sm font-bold text-paper">
+                      Label
+                    </label>
+                    <input
+                      id="note-label"
+                      required
+                      maxLength={200}
+                      value={noteLabel}
+                      onChange={(e) => setNoteLabel(e.target.value)}
+                      className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-2.5 text-sm text-paper placeholder:text-paper/40"
+                      placeholder="e.g. Resend API key"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="note-value" className="mb-2 block text-sm font-bold text-paper">
+                      Secret
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="note-value"
+                        required
+                        maxLength={10000}
+                        value={noteValue}
+                        onChange={(e) => setNoteValue(e.target.value)}
+                        autoComplete="off"
+                        className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-2.5 font-mono text-sm text-paper placeholder:font-body placeholder:text-paper/40"
+                        placeholder="Paste the key or credential here"
+                      />
+                      <GoldButton type="submit">Save</GoldButton>
                     </div>
-                    {revealed[note.id] && (
-                      <p className="mt-3 break-all rounded-md bg-navy p-3 font-mono text-sm text-gold-bright">
-                        {note.value}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {notes !== null && notes.length === 0 && (
-                <p className="mt-4 text-sm text-paper/50">No notes right now.</p>
-              )}
-            </div>
-          </section>
+                  </div>
+                </form>
+                {noteStatus && (
+                  <p role="status" className="mt-3 text-sm text-gold-bright">
+                    {noteStatus}
+                  </p>
+                )}
+
+                {notes === null ? (
+                  <LoadingRows />
+                ) : notes.length === 0 ? (
+                  <EmptyState
+                    title="No notes right now"
+                    body="Notes are meant to be short-lived. Save one here, let the other admin copy it, then delete it."
+                  />
+                ) : (
+                  <ul className="mt-6 divide-y divide-white/[0.06]">
+                    {notes.map((note) => (
+                      <li key={note.id} className="py-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="font-bold text-paper">{note.label}</p>
+                            <p className="text-xs text-paper/45">
+                              from {note.created_by}, {formatDay(note.created_at)}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <GhostButton
+                              onClick={() => setRevealed((r) => ({ ...r, [note.id]: !r[note.id] }))}
+                            >
+                              {revealed[note.id] ? "Hide" : "Reveal"}
+                            </GhostButton>
+                            <GhostButton onClick={() => copyNote(note.value, note.id)}>Copy</GhostButton>
+                            <GoldButton onClick={() => deleteNote(note.id)}>Delete</GoldButton>
+                          </div>
+                        </div>
+                        {revealed[note.id] && (
+                          <p className="mt-3 break-all rounded-md bg-navy-deep p-3 font-mono text-sm text-gold-bright">
+                            {note.value}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+          </>
         )}
       </div>
     </main>
