@@ -30,6 +30,27 @@ type SecureNote = {
   created_at: string;
 };
 
+type Donation = {
+  id: string;
+  created_at: string;
+  amount_cents: number;
+  currency: string;
+  status: string | null;
+  refund_status: string | null;
+  donor_email: string | null;
+  donor_first_name: string | null;
+  donor_last_name: string | null;
+  company_name: string | null;
+  receipt_url: string | null;
+};
+
+function money(cents: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: (currency || "usd").toUpperCase(),
+  }).format(cents / 100);
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
     dateStyle: "medium",
@@ -52,6 +73,8 @@ export default function AdminPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [leads, setLeads] = useState<Lead[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [donations, setDonations] = useState<Donation[] | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [notes, setNotes] = useState<SecureNote[] | null>(null);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [noteLabel, setNoteLabel] = useState("");
@@ -110,12 +133,62 @@ export default function AdminPage() {
     if (!error) setNotes((data as SecureNote[]) ?? []);
   }, []);
 
+  const loadDonations = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("donations")
+      .select(
+        "id, created_at, amount_cents, currency, status, refund_status, donor_email, donor_first_name, donor_last_name, company_name, receipt_url"
+      )
+      .order("created_at", { ascending: false });
+    if (!error) setDonations((data as Donation[]) ?? []);
+  }, []);
+
   useEffect(() => {
     if (session) {
       loadLeads();
+      loadDonations();
       loadNotes();
     }
-  }, [session, loadLeads, loadNotes]);
+  }, [session, loadLeads, loadDonations, loadNotes]);
+
+  async function syncDonations() {
+    if (!session) return;
+    setSyncing(true);
+    try {
+      await fetch("https://iorqovbeunehkvejcquc.supabase.co/functions/v1/zeffy-sync", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      await loadDonations();
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  function downloadDonationsCsv() {
+    if (!donations?.length) return;
+    const esc = (v: string | number | null) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const rows = donations.map((d) =>
+      [
+        formatDate(d.created_at),
+        `${d.donor_first_name ?? ""} ${d.donor_last_name ?? ""}`.trim(),
+        d.donor_email,
+        d.company_name,
+        (d.amount_cents / 100).toFixed(2),
+        d.currency.toUpperCase(),
+        d.status,
+        d.refund_status,
+      ].map(esc).join(",")
+    );
+    const csv = ["Date,Donor,Email,Company,Amount,Currency,Status,Refund Status", ...rows].join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ambient-thread-donations-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function addNote(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -305,6 +378,93 @@ export default function AdminPage() {
                 </li>
               ))}
             </ul>
+
+            {/* Donations synced from Zeffy */}
+            <div className="mt-16 border-t border-white/10 pt-10">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <h2 className="font-display text-2xl font-semibold text-paper">
+                  Donations
+                  {donations !== null && (
+                    <span className="ml-3 text-lg text-paper/50">
+                      ({donations.length} gifts,{" "}
+                      {money(
+                        donations
+                          .filter((d) => !d.refund_status || d.refund_status === "none")
+                          .reduce((sum, d) => sum + d.amount_cents, 0),
+                        donations[0]?.currency ?? "usd"
+                      )}{" "}
+                      total)
+                    </span>
+                  )}
+                </h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={syncDonations}
+                    disabled={syncing}
+                    className="rounded-full border border-paper/30 px-5 py-2 text-sm font-bold text-paper hover:border-gold hover:text-gold-bright disabled:opacity-50"
+                  >
+                    {syncing ? "Syncing..." : "Sync from Zeffy"}
+                  </button>
+                  <button
+                    onClick={downloadDonationsCsv}
+                    disabled={!donations?.length}
+                    className="rounded-full bg-gold px-5 py-2 text-sm font-bold text-navy hover:bg-gold-bright disabled:opacity-50"
+                  >
+                    Download CSV
+                  </button>
+                </div>
+              </div>
+              <p className="mt-2 text-sm text-paper/60">
+                Synced automatically from Zeffy every morning. Use Sync from Zeffy to pull
+                the latest right now.
+              </p>
+
+              {donations !== null && donations.length === 0 && (
+                <p className="mt-8 text-paper/70">No donations synced yet.</p>
+              )}
+
+              <ul className="mt-8 space-y-3">
+                {(donations ?? []).map((d) => (
+                  <li key={d.id} className="rounded-lg bg-navy-raise p-5">
+                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                      <p className="font-bold text-paper">
+                        {`${d.donor_first_name ?? ""} ${d.donor_last_name ?? ""}`.trim() ||
+                          d.company_name ||
+                          "Anonymous"}
+                        {d.donor_email && (
+                          <a
+                            href={`mailto:${d.donor_email}`}
+                            className="ml-3 font-normal text-gold-bright underline underline-offset-4"
+                          >
+                            {d.donor_email}
+                          </a>
+                        )}
+                      </p>
+                      <p className="font-display text-2xl font-semibold text-gold-bright">
+                        {money(d.amount_cents, d.currency)}
+                      </p>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-paper/50">
+                      <span>{formatDate(d.created_at)}</span>
+                      {d.status && <span>{d.status}</span>}
+                      {d.refund_status && d.refund_status !== "none" && (
+                        <span className="font-bold text-gold-bright">refund: {d.refund_status}</span>
+                      )}
+                      {d.receipt_url && (
+                        <a
+                          href={d.receipt_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-4 hover:text-gold-bright"
+                        >
+                          Receipt
+                        </a>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             {/* Secure notes: admin-to-admin secret exchange */}
             <div className="mt-16 border-t border-white/10 pt-10">
