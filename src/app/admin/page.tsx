@@ -377,7 +377,7 @@ export default function AdminPage() {
         {/* Header */}
         <header className="flex flex-wrap items-center justify-between gap-4 pb-6">
           <div className="flex items-center gap-3">
-            <img src="/images/logo.png" alt="" className="h-10 w-10 rounded-sm object-contain" />
+            <img src="/images/logo.webp" alt="" width={128} height={128} className="h-10 w-10 rounded-sm object-contain" />
             <div>
               <p className="font-display text-base font-semibold tracking-[0.14em] text-paper">
                 AMBIENT THREAD
@@ -735,10 +735,18 @@ export default function AdminPage() {
                 </div>
                 <p className="mt-3 text-sm text-paper/55">
                   If Northwest will not accept @ as the Name, leave the Name field empty
-                  instead; both mean the domain itself. The old records currently pointing @
-                  and www at the WordPress host get deleted at the same time (we will identify
-                  those together).
+                  instead; both mean the domain itself.
                 </p>
+                <div className="mt-4 rounded-md bg-navy-raise p-4">
+                  <p className="text-sm text-paper/80">
+                    <span className="font-bold text-gold-bright">Order matters for www: </span>
+                    delete the old www record first (the A record pointing at 66.223.49.89, the
+                    old WordPress host), then add the CNAME. DNS does not allow a CNAME and an
+                    A record on the same name, so while the old www record exists the CNAME
+                    will not save or will not take effect. The old @ records pointing at the
+                    WordPress host get deleted the same way.
+                  </p>
+                </div>
 
                 <h2 className="font-display mt-10 text-xl font-semibold text-paper">
                   Email records (Resend)

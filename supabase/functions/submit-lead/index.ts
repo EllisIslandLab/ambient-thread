@@ -90,5 +90,32 @@ Deno.serve(async (req) => {
   });
   if (error) return json({ ok: false, error: "db" }, 500);
 
+  // Notify the foundation inbox. Best-effort: a mail hiccup must never fail
+  // the submission (the lead is already safe in the database).
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (resendKey) {
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+          // Resend sits behind Cloudflare, which rejects default non-browser agents.
+          "User-Agent":
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36",
+        },
+        body: JSON.stringify({
+          from: "Ambient Thread Website <admin@ambientthread.org>",
+          to: ["AmbientThread@gmail.com"],
+          reply_to: email,
+          subject: `New website message: ${interest} (${name})`,
+          text: `${message}\n\nFrom: ${name}\nEmail: ${email}\nInterested in: ${interest}\n\nView all messages: https://ambient-thread.vercel.app/admin`,
+        }),
+      });
+    } catch {
+      /* lead is stored; notification failure is non-fatal */
+    }
+  }
+
   return json({ ok: true });
 });

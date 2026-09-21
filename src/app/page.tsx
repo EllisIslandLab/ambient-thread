@@ -122,7 +122,7 @@ function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
       {/* The lotus mark, blooming quietly out of the right edge. Its background
           is the exact same navy as the page, so it sits seamlessly. */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-16 top-1/2 hidden w-[520px] -translate-y-1/2 select-none md:block lg:w-[620px]">
-        <img src="/images/lotus-mark.webp" alt="" className="w-full" />
+        <img src="/images/lotus-mark.webp" alt="" width={500} height={500} className="w-full" />
       </div>
 
       {/* Faint full-width thread behind the headline */}
@@ -184,7 +184,7 @@ function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
 
       {/* Mobile lotus, below text */}
       <div aria-hidden="true" className="pointer-events-none relative mx-auto -mb-10 w-64 select-none md:hidden">
-        <img src="/images/lotus-mark.webp" alt="" className="w-full" />
+        <img src="/images/lotus-mark.webp" alt="" width={500} height={500} className="w-full" />
       </div>
     </section>
   );
@@ -314,6 +314,10 @@ function Story() {
                 <img
                   src="/images/melissa-story.webp"
                   alt="Melissa Burns, founder of the Ambient Thread Foundation"
+                  width={1000}
+                  height={1653}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover object-[center_30%]"
                 />
               </div>
@@ -604,6 +608,10 @@ function HowWereBuilding() {
                 <img
                   src="/images/stage-performance.webp"
                   alt="A stage performance in warm light, with flowing fabric wings unfurled"
+                  width={480}
+                  height={720}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                 />
               </div>
