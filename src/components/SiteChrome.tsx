@@ -25,7 +25,7 @@ export function Nav() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-navy/90 backdrop-blur-md">
       <nav aria-label="Main navigation" className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 sm:px-8">
         <a href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
-          <img src="/images/logo.webp" alt="" width={128} height={128} className="h-11 w-11 rounded-sm object-contain" />
+          <img src="/images/logo.webp" alt="Ambient Thread Foundation gold lotus logo" width={128} height={128} className="h-11 w-11 rounded-sm object-contain" />
           <span className="font-display text-lg font-semibold tracking-[0.14em] text-paper">
             AMBIENT THREAD
             <span className="block text-[0.62rem] font-normal tracking-[0.3em] text-gold-bright">FOUNDATION</span>
@@ -102,7 +102,7 @@ export function Footer() {
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
         <div className="flex flex-col items-start justify-between gap-10 md:flex-row md:items-center">
           <a href="/" className="flex items-center gap-3">
-            <img src="/images/logo.webp" alt="" width={128} height={128} loading="lazy" className="h-12 w-12 rounded-sm object-contain" />
+            <img src="/images/logo.webp" alt="Ambient Thread Foundation gold lotus logo" width={128} height={128} loading="lazy" className="h-12 w-12 rounded-sm object-contain" />
             <span className="font-display text-lg font-semibold tracking-[0.14em] text-paper">
               AMBIENT THREAD
               <span className="block text-[0.62rem] font-normal tracking-[0.3em] text-gold-bright">FOUNDATION</span>

@@ -1,10 +1,23 @@
 import type { Metadata } from "next";
 import { Nav, Footer } from "@/components/SiteChrome";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Partners | Ambient Thread Foundation",
   description:
     "The partners and supporters helping the Ambient Thread Foundation build accessible, personalized listening tools for the sound-sensitive community.",
+  alternates: {
+    canonical: `${SITE_URL}/partners`,
+  },
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/partners`,
+    siteName: "Ambient Thread Foundation",
+    title: "Partners | Ambient Thread Foundation",
+    description:
+      "The partners and supporters helping the Ambient Thread Foundation build accessible, personalized listening tools for the sound-sensitive community.",
+    locale: "en_US",
+  },
 };
 
 const PARTNERS = [

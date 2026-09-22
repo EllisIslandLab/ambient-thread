@@ -1,0 +1,35 @@
+# Ambient Thread Foundation
+
+> A nonprofit organization making everyday listening easier, more accessible, and more inclusive for people with different hearing and auditory needs — including people who are single-sided deaf, hard of hearing, or sound-sensitive.
+
+Website: https://ambientthread.org
+
+## Who we are
+
+- Registered New Mexico non-profit organization (founded August 5, 2026). Federal 501(c)(3) tax-exempt status is pending with the IRS. EIN: 42-4819969.
+- Founded by Melissa Burns, who became single-sided deaf at age 37 after surgery to remove an acoustic neuroma in 2024.
+- Remote organization. Mailing address: 1209 Mountain Road Pl NE, Ste N, Albuquerque, NM 87110, USA.
+
+## What we offer
+
+- An accessibility-focused iOS audio app, expected in 2027: personalized sound routing and listening balance using standard iOS devices and the headphones people already own — no specialized, costly audio hardware required. Built for asymmetrical listening, easier conversation-following, situational awareness, and comfort in loud spaces.
+- Education, peer-informed support, and resource navigation for the sound-sensitive community.
+- Volunteer, advisory, and leadership-pipeline opportunities (remote-friendly).
+
+Important: the app is intended for general wellness and everyday audio customization. It is not a medical device, hearing aid, or treatment for hearing loss.
+
+## Pricing and donations
+
+- The foundation's programs and website are free to use. App pricing has not been announced; affordability is a stated goal.
+- Donations are processed through Zeffy with zero platform or processing fees, so 100% of each gift goes to the mission: https://www.zeffy.com/en-US/donation-form/donate-to-pay-our-developer-and-backend-support
+
+## Key pages
+
+- Home, mission, founder story, app details, FAQ, and contact form: https://ambientthread.org/
+- Partners: https://ambientthread.org/partners
+
+## Contact
+
+- Email: AmbientThread@gmail.com (general), Admin@ambientthread.org (administrative)
+- Phone: +1 505-750-4327
+- Instagram: https://instagram.com/AmbientThread

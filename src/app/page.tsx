@@ -122,7 +122,7 @@ function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
       {/* The lotus mark, blooming quietly out of the right edge. Its background
           is the exact same navy as the page, so it sits seamlessly. */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-16 top-1/2 hidden w-[520px] -translate-y-1/2 select-none md:block lg:w-[620px]">
-        <img src="/images/lotus-mark.webp" alt="" width={500} height={500} className="w-full" />
+        <img src="/images/lotus-mark.webp" alt="Gold lotus flower emblem of the Ambient Thread Foundation on a navy background" width={500} height={500} className="w-full" />
       </div>
 
       {/* Faint full-width thread behind the headline */}
@@ -184,7 +184,7 @@ function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
 
       {/* Mobile lotus, below text */}
       <div aria-hidden="true" className="pointer-events-none relative mx-auto -mb-10 w-64 select-none md:hidden">
-        <img src="/images/lotus-mark.webp" alt="" width={500} height={500} className="w-full" />
+        <img src="/images/lotus-mark.webp" alt="Gold lotus flower emblem of the Ambient Thread Foundation on a navy background" width={500} height={500} className="w-full" />
       </div>
     </section>
   );

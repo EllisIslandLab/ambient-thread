@@ -4,3 +4,6 @@
 # NEVER add X-Frame-Options: DENY/SAMEORIGIN here — it re-blocks embedding.
 /*
   Content-Security-Policy: frame-ancestors 'self' https://www.weblaunchacademy.com https://*.weblaunchacademy.com;
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
