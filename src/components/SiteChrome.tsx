@@ -142,7 +142,7 @@ export function Footer() {
         <div className="mt-10 flex flex-col gap-3 text-sm text-paper/55 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; 2026 Ambient Thread Foundation. All rights reserved.</p>
           <a
-            href="https://weblaunchacademy.com/"
+            href="https://www.weblaunchacademy.com/?ref=8UN6EDET"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:opacity-80"

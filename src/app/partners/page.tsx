@@ -24,7 +24,7 @@ const PARTNERS = [
   {
     name: "Web Launch Academy",
     role: "Website Design, Development & Technology",
-    url: "https://www.weblaunchacademy.com",
+    url: "https://www.weblaunchacademy.com/?ref=8UN6EDET",
     urlLabel: "weblaunchacademy.com",
     email: "hello@weblaunchacademy.com",
     description:
