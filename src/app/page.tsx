@@ -722,7 +722,8 @@ function GetInvolved() {
               </h3>
               <p className="mt-4 text-paper/75">
                 Contributions go toward development and backend support for the foundation&rsquo;s
-                accessibility-focused iOS app. Donations are processed securely through Zeffy.
+                accessibility-focused iOS app. Donations are tax-deductible and processed securely
+                through Zeffy.
               </p>
             </div>
             <a
@@ -753,11 +754,11 @@ const FAQS = [
   },
   {
     q: "Is my donation tax-deductible?",
-    a: "The Ambient Thread Foundation is a registered New Mexico non-profit organization currently awaiting its official 501(c)(3) tax-exempt status from the IRS. Once approved, tax-exempt status is typically retroactive from our formation date (August 5, 2026), meaning your gift may become retroactively tax-deductible. We recommend holding onto your receipt and consulting a tax professional.",
+    a: "Yes. The Ambient Thread Foundation is recognized by the IRS as a 501(c)(3) tax-exempt public charity, so your donation is tax-deductible to the fullest extent allowed by law. Our exemption is effective as of our formation date (August 5, 2026), which means gifts made since then also qualify. Please keep your receipt, and consult a tax professional about your individual situation.",
   },
   {
     q: "Where can I find your EIN or official registration details?",
-    a: "Transparency is core to our mission. Our EIN is 42-4819969, and we are legally registered with the State of New Mexico.",
+    a: "Transparency is core to our mission. Our EIN is 42-4819969. We are legally registered with the State of New Mexico and recognized by the IRS as a 501(c)(3) public charity (determination letter dated September 17, 2026).",
   },
   {
     q: "Are there any transaction fees taken out of my online donation?",

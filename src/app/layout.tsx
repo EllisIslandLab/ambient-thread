@@ -79,6 +79,7 @@ const ORG_SCHEMA = {
     name: "Melissa Burns",
   },
   taxID: "42-4819969",
+  nonprofitStatus: "https://schema.org/Nonprofit501c3",
   sameAs: [
     "https://instagram.com/AmbientThread",
     "https://www.zeffy.com/en-US/donation-form/donate-to-pay-our-developer-and-backend-support",

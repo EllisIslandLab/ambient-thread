@@ -134,9 +134,10 @@ export function Footer() {
         </p>
 
         <p className="mt-6 max-w-4xl text-sm leading-relaxed text-paper/55">
-          Ambient Thread Foundation is a registered New Mexico non-profit organization;
-          federal 501(c)(3) tax-exempt status is pending with the IRS. EIN 42-4819969.
-          Mailing address: 1209 Mountain Road Pl NE, Ste N, Albuquerque, NM 87110.
+          Ambient Thread Foundation is a registered New Mexico non-profit organization and an
+          IRS-recognized 501(c)(3) tax-exempt public charity. Donations are tax-deductible to the
+          extent allowed by law. EIN 42-4819969. Mailing address: 1209 Mountain Road Pl NE,
+          Ste N, Albuquerque, NM 87110.
         </p>
 
         <div className="mt-10 flex flex-col gap-3 text-sm text-paper/55 sm:flex-row sm:items-center sm:justify-between">
