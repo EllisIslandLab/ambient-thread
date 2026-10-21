@@ -101,6 +101,8 @@ export default function RootLayout({
         <ConsoleCapture />
         {children}
         <Analytics />
+        {/* Web Launch Academy analytics */}
+        <script defer src="https://weblaunchacademy.com/beacon.js" data-site="231f7f7d-a992-4de2-b736-eae882619e18"></script>
       </body>
     </html>
   );
