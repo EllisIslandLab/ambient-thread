@@ -103,6 +103,8 @@ export default function RootLayout({
         <Analytics />
         {/* Web Launch Academy analytics */}
         <script defer src="https://weblaunchacademy.com/beacon.js" data-site="231f7f7d-a992-4de2-b736-eae882619e18"></script>
+        {/* Web Launch Academy portal bridge (preview tools; inert outside the portal) */}
+        <script defer src="https://www.weblaunchacademy.com/bridge.js"></script>
       </body>
     </html>
   );
