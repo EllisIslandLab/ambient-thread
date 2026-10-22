@@ -140,8 +140,29 @@ export function Footer() {
           Ste N, Albuquerque, NM 87110.
         </p>
 
+        <p className="mt-6 text-sm leading-relaxed text-paper/55">
+          Contact:{" "}
+          <a href="mailto:Admin@ambientthread.org" className="underline underline-offset-4 hover:text-gold-bright">
+            Admin@ambientthread.org
+          </a>
+          <span className="mx-2" aria-hidden="true">·</span>
+          <a href="tel:+15057504327" className="underline underline-offset-4 hover:text-gold-bright">
+            (505) 750-4327
+          </a>
+        </p>
+
         <div className="mt-10 flex flex-col gap-3 text-sm text-paper/55 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; 2026 Ambient Thread Foundation. All rights reserved.</p>
+          <p>
+            &copy; 2026 Ambient Thread Foundation. All rights reserved.
+            <span className="mx-2" aria-hidden="true">·</span>
+            <a href="/privacy" className="underline underline-offset-4 hover:text-gold-bright">
+              Privacy Policy
+            </a>
+            <span className="mx-2" aria-hidden="true">·</span>
+            <a href="/terms" className="underline underline-offset-4 hover:text-gold-bright">
+              Terms of Use
+            </a>
+          </p>
           <a
             href="https://www.weblaunchacademy.com/?ref=8UN6EDET"
             target="_blank"
