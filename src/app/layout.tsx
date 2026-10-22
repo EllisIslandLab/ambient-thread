@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Atkinson_Hyperlegible } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import { ConsoleCapture } from "@/components/ConsoleCapture";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
+
+const GA_MEASUREMENT_ID = "G-K27BZD77TY";
 
 const display = Cormorant_Garamond({
   subsets: ["latin"],
@@ -105,6 +108,15 @@ export default function RootLayout({
         <script defer src="https://weblaunchacademy.com/beacon.js" data-site="231f7f7d-a992-4de2-b736-eae882619e18"></script>
         {/* Web Launch Academy portal bridge (preview tools; inert outside the portal) */}
         <script defer src="https://www.weblaunchacademy.com/bridge.js"></script>
+        {/* Google Analytics 4 (requested by Melissa 2026-10-21 for Google Ad Grants).
+            The measurement ID is public by design, not a secret. */}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`}
+        </Script>
       </body>
     </html>
   );
