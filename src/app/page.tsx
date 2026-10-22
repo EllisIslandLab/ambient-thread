@@ -1,7 +1,7 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
 import { Nav, Footer, DONATE_URL } from "@/components/SiteChrome";
+import { Contact } from "@/components/HomeContact";
+import { StickyBar } from "@/components/StickyBar";
+import { IconCompass, IconConversation, IconEar, IconHeadphones, IconHeart, IconInstagram, IconMail, IconSliders } from "@/components/icons";
 
 /* ----------------------------------------------------------------------------
    Ambient Thread Foundation
@@ -10,91 +10,6 @@ import { Nav, Footer, DONATE_URL } from "@/components/SiteChrome";
    site's single decorative motif. All copy sourced from the foundation's own
    published material.
 ---------------------------------------------------------------------------- */
-
-/* ------------------------------- Icons (SVG) ------------------------------ */
-
-function IconEar({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M6 8.5a6 6 0 1 1 12 0c0 3-2 4-3.2 5.6-.9 1.2-.8 2.4-1.3 3.9a3 3 0 0 1-5.6-.5" />
-      <path d="M9.5 8.5a2.5 2.5 0 0 1 5 0c0 1.6-1.2 2.2-2 3.2" />
-    </svg>
-  );
-}
-
-function IconSliders({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
-      <path d="M5 4v6M5 14v6M12 4v10M12 18v2M19 4v2M19 10v10" />
-      <circle cx="5" cy="12" r="2" />
-      <circle cx="12" cy="16" r="2" />
-      <circle cx="19" cy="8" r="2" />
-    </svg>
-  );
-}
-
-function IconConversation({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 3.5V6z" />
-      <path d="M19 9h1a2 2 0 0 1 2 2v9l-3.5-2.5H13" />
-    </svg>
-  );
-}
-
-function IconCompass({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="m15.5 8.5-2.2 5-4.8 2 2.2-5 4.8-2z" />
-    </svg>
-  );
-}
-
-function IconHeadphones({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
-      <rect x="3" y="14" width="4" height="6" rx="1.5" />
-      <rect x="17" y="14" width="4" height="6" rx="1.5" />
-    </svg>
-  );
-}
-
-function IconHeart({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 20.5s-7.5-4.6-9.3-9A5.2 5.2 0 0 1 12 6.9a5.2 5.2 0 0 1 9.3 4.6c-1.8 4.4-9.3 9-9.3 9z" />
-    </svg>
-  );
-}
-
-function IconMail({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
-    </svg>
-  );
-}
-
-function IconPhone({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
-    </svg>
-  );
-}
-
-function IconInstagram({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
 
 /* --------------------------- Decorative thread ---------------------------- */
 
@@ -116,9 +31,9 @@ function ThreadDivider({ flip = false }: { flip?: boolean }) {
 
 /* ---------------------------------- Hero ----------------------------------- */
 
-function Hero({ heroRef }: { heroRef: React.RefObject<HTMLElement | null> }) {
+function Hero() {
   return (
-    <section ref={heroRef} id="top" className="relative flex min-h-[92svh] flex-col overflow-hidden bg-navy pt-24">
+    <section id="top" className="relative flex min-h-[92svh] flex-col overflow-hidden bg-navy pt-24">
       {/* The lotus mark, blooming quietly out of the right edge. Its background
           is the exact same navy as the page, so it sits seamlessly. */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-16 top-1/2 hidden w-[520px] -translate-y-1/2 select-none md:block lg:w-[620px]">
@@ -312,10 +227,12 @@ function Story() {
             <div className="relative">
               <div className="aspect-[4/5] overflow-hidden rounded-lg">
                 <img
-                  src="/images/melissa-story.webp"
+                  src="/images/melissa-story-720.webp"
+                  srcSet="/images/melissa-story-480.webp 480w, /images/melissa-story-720.webp 720w, /images/melissa-story-960.webp 960w"
+                  sizes="(min-width: 1024px) 420px, calc(100vw - 40px)"
                   alt="Melissa Burns, founder of the Ambient Thread Foundation"
-                  width={1000}
-                  height={1653}
+                  width={720}
+                  height={900}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover object-[center_30%]"
@@ -823,276 +740,13 @@ function Faq() {
   );
 }
 
-/* --------------------------------- Contact --------------------------------- */
-
-const LEAD_ENDPOINT = "https://iorqovbeunehkvejcquc.supabase.co/functions/v1/submit-lead";
-
-function Contact() {
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    const name = String(data.get("name") || "");
-    const email = String(data.get("email") || "");
-    const interest = String(data.get("interest") || "");
-    const message = String(data.get("message") || "");
-    const website = String(data.get("website") || "");
-
-    setStatus("sending");
-    try {
-      const res = await fetch(LEAD_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, interest, message, website }),
-      });
-      const result = await res.json();
-      if (res.ok && result.ok) {
-        setStatus("sent");
-        form.reset();
-        return;
-      }
-      throw new Error("submit failed");
-    } catch {
-      // Fallback: open the visitor's mail client so the message is never lost.
-      const subject = encodeURIComponent(`${interest || "Website message"}: ${name}`);
-      const body = encodeURIComponent(
-        `${message}\n\nName: ${name}\nEmail: ${email}\nInterested in: ${interest || "Not specified"}`
-      );
-      window.location.href = `mailto:AmbientThread@gmail.com?subject=${subject}&body=${body}`;
-      setStatus("error");
-    }
-  }
-
-  return (
-    <section id="contact" className="bg-paper text-ink">
-      <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8 lg:py-32">
-        <div className="grid grid-cols-1 gap-y-14 lg:grid-cols-12 lg:gap-x-16">
-          <div className="lg:col-span-5">
-            <p className="eyebrow mb-5" style={{ color: "#6B5713" }}>
-              Contact Us
-            </p>
-            <h2 className="font-display text-4xl font-semibold sm:text-5xl">
-              We would love to hear from you.
-            </h2>
-            <p className="mt-6 text-lg text-ink-soft">
-              Questions, ideas, lived experience you want to share, or interest in supporting
-              the foundation&rsquo;s work: every message reaches Melissa.
-            </p>
-
-            <ul className="mt-10 space-y-5">
-              <li>
-                <a href="mailto:AmbientThread@gmail.com" className="group flex items-center gap-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-gold-bright">
-                    <IconMail />
-                  </span>
-                  <span className="font-bold text-ink underline-offset-4 group-hover:underline">
-                    AmbientThread@gmail.com
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a href="mailto:Admin@ambientthread.org" className="group flex items-center gap-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-gold-bright">
-                    <IconMail />
-                  </span>
-                  <span className="font-bold text-ink underline-offset-4 group-hover:underline">
-                    Admin@ambientthread.org
-                    <span className="block text-sm font-normal text-ink-soft">Administrative inquiries</span>
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a href="tel:+15057504327" className="group flex items-center gap-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-gold-bright">
-                    <IconPhone />
-                  </span>
-                  <span className="font-bold text-ink underline-offset-4 group-hover:underline">
-                    505-750-4327
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://instagram.com/AmbientThread"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-4"
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-gold-bright">
-                    <IconInstagram />
-                  </span>
-                  <span className="font-bold text-ink underline-offset-4 group-hover:underline">
-                    @AmbientThread
-                  </span>
-                </a>
-              </li>
-              <li className="flex items-center gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-navy text-gold-bright">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" />
-                    <circle cx="12" cy="10" r="2.5" />
-                  </svg>
-                </span>
-                <span className="font-bold text-ink">
-                  1209 Mountain Road Pl NE, Ste N
-                  <span className="block text-sm font-normal text-ink-soft">
-                    Albuquerque, NM 87110 (mailing address; we are a remote organization)
-                  </span>
-                </span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="lg:col-span-7">
-            <form onSubmit={handleSubmit} className="rounded-lg bg-navy p-7 sm:p-10">
-              {/* Honeypot: hidden from real users, tempting to bots */}
-              <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
-                <label htmlFor="website">Website</label>
-                <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
-              </div>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="sm:col-span-1">
-                  <label htmlFor="name" className="mb-2 block font-bold text-paper">
-                    Name
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    required
-                    autoComplete="name"
-                    className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 text-paper placeholder:text-paper/40"
-                    placeholder="Your name"
-                  />
-                </div>
-                <div className="sm:col-span-1">
-                  <label htmlFor="email" className="mb-2 block font-bold text-paper">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 text-paper placeholder:text-paper/40"
-                    placeholder="you@example.com"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label htmlFor="interest" className="mb-2 block font-bold text-paper">
-                    How would you like to get involved?
-                  </label>
-                  <div className="relative">
-                    <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-bright"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="m4 6 4 4 4-4" />
-                    </svg>
-                    <select
-                      id="interest"
-                      name="interest"
-                      className="w-full appearance-none rounded-md border border-white/20 bg-navy-raise px-4 py-3 pr-11 text-paper"
-                      defaultValue=""
-                    >
-                    <option value="">Just saying hello</option>
-                    <option value="Volunteering">Volunteering</option>
-                    <option value="Sharing my story">Sharing my story or lived experience</option>
-                    <option value="Pro-bono skills">Offering pro-bono skills</option>
-                    <option value="Partnership or introduction">Partnership or introduction</option>
-                    <option value="Donation question">Donation question</option>
-                      <option value="Board, committee, or internship">Board, committee, or internship</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="sm:col-span-2">
-                  <label htmlFor="message" className="mb-2 block font-bold text-paper">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={6}
-                    required
-                    className="w-full rounded-md border border-white/20 bg-navy-raise px-4 py-3 text-paper placeholder:text-paper/40"
-                    placeholder="How can we help, or how would you like to help?"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={status === "sending"}
-                className="mt-8 w-full rounded-full bg-gold px-8 py-4 text-lg font-bold text-navy transition-colors duration-200 hover:bg-gold-bright disabled:opacity-60 sm:w-auto"
-              >
-                {status === "sending" ? "Sending..." : "Send Message"}
-              </button>
-              <p role="status" className="mt-5 min-h-[1.5rem] text-gold-bright">
-                {status === "sent" &&
-                  "Thank you! Your message is on its way. We will get back to you soon."}
-                {status === "error" &&
-                  "We could not send that automatically, so your email app should have opened instead. If it did not, please email us directly at AmbientThread@gmail.com."}
-              </p>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ---------------------------------- Footer ---------------------------------- */
-
-/* ----------------------------- Sticky mobile CTA ---------------------------- */
-
-function StickyBar({ visible }: { visible: boolean }) {
-  return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-gold/40 bg-navy-deep transition-opacity duration-300 md:hidden"
-      style={{
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? "auto" : "none",
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
-    >
-      <a href="tel:+15057504327" className="flex flex-1 items-center justify-center gap-2 py-4 font-bold text-paper">
-        <IconPhone className="h-5 w-5 text-gold-bright" />
-        Call
-      </a>
-      <span aria-hidden="true" className="w-px bg-white/15" />
-      <a href="#contact" className="flex flex-1 items-center justify-center gap-2 py-4 font-bold text-gold-bright">
-        <IconMail className="h-5 w-5" />
-        Message Us
-      </a>
-    </div>
-  );
-}
 
 /* ----------------------------------- Page ----------------------------------- */
 
+// A server component: the sections render to plain HTML, and only the contact form
+// and the phone sticky bar hydrate as client JavaScript.
 export default function Home() {
-  const heroRef = useRef<HTMLElement | null>(null);
-  const [heroVisible, setHeroVisible] = useState(true);
-
-  useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero) return;
-    const observer = new IntersectionObserver(
-      (entries) => setHeroVisible(entries[0].isIntersecting),
-      { threshold: 0.1 }
-    );
-    observer.observe(hero);
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <>
       <a
@@ -1103,7 +757,7 @@ export default function Home() {
       </a>
       <Nav />
       <main id="main">
-        <Hero heroRef={heroRef} />
+        <Hero />
         <OutcomesStrip />
         <Mission />
         <Story />
@@ -1114,7 +768,7 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
-      <StickyBar visible={!heroVisible} />
+      <StickyBar />
     </>
   );
 }

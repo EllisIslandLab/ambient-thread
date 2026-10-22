@@ -110,8 +110,8 @@ export default function RootLayout({
         <script defer src="https://www.weblaunchacademy.com/bridge.js"></script>
         {/* Google Analytics 4 (requested by Melissa 2026-10-21 for Google Ad Grants).
             The measurement ID is public by design, not a secret. */}
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
-        <Script id="ga4-init" strategy="afterInteractive">
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="lazyOnload" />
+        <Script id="ga4-init" strategy="lazyOnload">
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
