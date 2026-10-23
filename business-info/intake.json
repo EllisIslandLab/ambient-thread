@@ -1,0 +1,23 @@
+{
+  "intake": {},
+  "manifest": [
+    {
+      "kind": "doc",
+      "repoPath": "business-info/noisy-environments-guide.md",
+      "originalName": "Noisy Environments Guide.pdf",
+      "extractedTextPath": "business-info/noisy-environments-guide.md"
+    },
+    {
+      "kind": "doc",
+      "repoPath": "business-info/guide-to-make-everyday-outings-easier.md",
+      "originalName": "Guide to Make Everyday Outings Easier.pdf",
+      "extractedTextPath": "business-info/guide-to-make-everyday-outings-easier.md"
+    },
+    {
+      "kind": "doc",
+      "repoPath": "business-info/sound-accessibility-intro-guide.md",
+      "originalName": "Sound Accessibility Intro Guide.pdf",
+      "extractedTextPath": "business-info/sound-accessibility-intro-guide.md"
+    }
+  ]
+}
